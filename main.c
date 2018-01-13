@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "structures.h"
+#include "macros.h"
+
+
 int main(int argc, char * argv[]){
     // Checks for input and output files
     FILE * infile, * outfile;
