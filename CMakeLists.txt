@@ -4,4 +4,4 @@ project(CS143B C)
 set(CMAKE_C_STANDARD 99)
 
 add_executable(CS143B main.c structures.c input.txt macros.h output.txt
-        shell_commands.c random.c)
+        shell_commands.c random.c structures.h)
