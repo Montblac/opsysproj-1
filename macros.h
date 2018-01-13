@@ -6,4 +6,8 @@
 #define RUNNING 2
 #define BLOCKED 3
 
+#define INIT 0
+#define USER 1
+#define SYSTEM 2
+
 #endif
