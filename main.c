@@ -15,7 +15,7 @@ int main(int argc, char * argv[]){
 		size_t size; ssize_t input_size; char * input = NULL;
 
         printf("shell >> ");
-		while( (input_size = getline(&input, &size, stdin) ) != EOF ){
+        while( (input_size = getline(&input, &size, stdin) ) != EOF ){
             char * command = strtok(input, " \n");
 
             if(!strcmp(command, "init")) {
