@@ -16,7 +16,7 @@ typedef struct BlockList {
     struct PCB * r2;
     struct PCB * r3;
     struct PCB * r4;
-};
+} BlockList;
 
 typedef struct ProcessLL {
     struct PCB * process;
@@ -29,12 +29,17 @@ typedef struct ResourceLL {
 } ResourceNode;
 
 typedef struct PCB {
-    char pid;	                // Process Name
+    char * pid;	                // Process Name
+    int state;                  // State
+    int priority;               // Priority
+    int blocked;                // Blocked Status
+
     //Node resources;	            // Linked List of Resource Block
-    int status;	                // Status
-    struct PCB * parent;	    // Parent
-    struct ProcessLL * child;	// Linked List of Children
-    int priority;	            // Priority
+    struct PCB * parent;	        // Parent
+    ProcessNode * child;    	    // Linked List of Children
+    BlockList * blocklist;   // Pointer to blocklist
+    ReadyList * readylist;   // Pointer to readylist
+
 } PCB;
 
 

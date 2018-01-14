@@ -3,6 +3,7 @@
 
 #include "structures.h"
 #include "macros.h"
+#include "operations.h"
 
 
 int main(int argc, char * argv[]){
