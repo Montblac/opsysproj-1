@@ -10,4 +10,7 @@
 #define USER 1
 #define SYSTEM 2
 
+#define FREE 0
+#define ALLOCATED 1
+
 #endif
