@@ -20,6 +20,11 @@ ProcessNode * deleteChild(PCB * src, const char * child_id);
 void insert(ReadyList * readylist, PCB * process);
 
 // Main Operations
-PCB * create (const char * name, int priority, PCB * curr_process, ReadyList * readylist);
+PCB * create(const char * name, int priority, PCB * curr_process, ReadyList * readylist);
+void scheduler(PCB * active_process, ReadyList * readylist);
+
+// Debugging
+void printReadyList(ReadyList * readylist, int priority);
+void printTree(char * name, ReadyList * readylist);
 
 #endif //CS143B_OPERATIONS_H

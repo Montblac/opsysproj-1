@@ -2,6 +2,7 @@
 // Created by Sam Leyva on 1/13/18.
 //
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 #include "macros.h"
@@ -151,7 +152,9 @@ void insert(ReadyList * readylist, PCB * process){
     }
 }
 
+//
 // Main Operations
+//
 PCB * create (const char * name, int priority, PCB * curr_process, ReadyList * readylist){
     PCB * new_process = malloc(sizeof(struct PCB));
     new_process->pid = strdup(name);
@@ -165,6 +168,82 @@ PCB * create (const char * name, int priority, PCB * curr_process, ReadyList * r
     insert(readylist, new_process);
     //Scheduler()
     return new_process;
+}
+void scheduler(PCB * active_process, ReadyList * readylist){
+    PCB * highest_ready;
+    if(readylist->system != NULL){
+        ProcessNode * temp = readylist->system;
+        highest_ready = temp->process;
+    } else if (readylist->user){
+        ProcessNode * temp = readylist->user;
+        highest_ready = temp->process;
+    } else {
+        ProcessNode * temp = readylist->init;
+        highest_ready = temp->process;
+    }
 
+    if(active_process->priority < highest_ready->priority ||
+            active_process->state != RUNNING ||
+            active_process == NULL){
+        active_process = highest_ready;
+    }
 }
 
+//
+// Debugging
+//
+
+void printReadyList(ReadyList * readylist, int priority){
+    // Prints every process in the ready list with specified priority
+    ProcessNode * temp = NULL;
+    if(priority == INIT) {
+        temp = readylist->init;
+    } else if (priority == USER) {
+        temp = readylist->user;
+    } else if (priority == SYSTEM){
+        temp = readylist->system;
+    }
+    if(temp != NULL) {
+        printf("Processes with priority level %d: ", priority);
+        while (temp != NULL) {
+            PCB *proc = temp->process;
+            printf("%s, ", proc->pid);
+            temp = temp->next;
+        }
+        printf("\n");
+    } else {
+        printf("No processes with priority level %d\n", priority);
+    }
+}
+
+void printTree(char * name, ReadyList * readylist){
+    int counter = 3;
+    while(counter != 0) {
+        ProcessNode *temp = NULL;
+        if(counter == 3){
+            temp = readylist->system;
+        } else if (counter == 2){
+            temp = readylist->user;
+        } else if (counter == 1){
+            temp = readylist->init;
+        }
+        while (temp != NULL) {
+            PCB *proc = temp->process;
+            if (!strcmp(proc->pid, name)) {
+                printf("Process: %s\n", proc->pid);
+                printf("Parent: %s\n", proc->parent->pid);
+                ProcessNode * child = proc->child;
+                printf("Children: ");
+                if(child == NULL){
+                    printf("None.\n");
+                }
+                while(child != NULL){
+                    PCB * child_proc = child->process;
+                    printf("%s", child_proc->pid);
+                }
+            }
+            temp = temp->next;
+        }
+        --counter;
+    }
+}

@@ -22,7 +22,8 @@ int main(int argc, char * argv[]){
         // Initialize System
         ReadyList * readylist = initReadyList();
         BlockList * blocklist = initBlockList();
-        PCB * init = create("init", 0, NULL, readylist);
+        PCB * active_process = create("init", 0, NULL, readylist);
+
 
         //printf(readylist->user);
         //printf(readylist->system);
@@ -40,14 +41,29 @@ int main(int argc, char * argv[]){
                 freeBlockList(blocklist);
                 readylist = initReadyList();
                 blocklist = initBlockList();
-                init = create("init", 0, NULL, readylist);
+                active_process = create("init", 0, NULL, readylist);
+                // Write to file : "init"
 
 
             } else if (!strcmp(command, "cr")) {
                 printf("Received 'cr' command.\n");
+                char * name = strdup(strtok(NULL, " \n"));
+                int priority = (int) strtol(strdup(strtok(NULL, " \n")), NULL, 10);
+                if(strtok(NULL, " \n")){
+                    printf("Invalid command; please try again.\n");
+                }
+                PCB * temp = create(name, priority, active_process, readylist);
 
             } else if (!strcmp(command, "de")) {
                 printf("Received 'de' command.\n");
+
+                ProcessNode *new_test = readylist->system;
+                while(new_test != NULL) {
+                    PCB * new_test2 = new_test->process;
+                    PCB * parent = new_test2->parent;
+                    printf("Parent %s\n", parent->pid);
+                    new_test = new_test->next;
+                }
 
             } else if (!strcmp(command, "req")) {
                 printf("Received 'req' command.\n");
@@ -61,6 +77,19 @@ int main(int argc, char * argv[]){
             } else if (!strcmp(command, "exit")) {
                 printf("Exiting session...\n");
                 break;
+
+            } else if (!strcmp(command, "showProcesses")) {
+                // For Debugging Purposes
+                printf("Received 'showProcesses' command.\n");
+                printReadyList(readylist, SYSTEM);
+                printReadyList(readylist, USER);
+                printReadyList(readylist, INIT);
+
+            } else if (!strcmp(command, "showTree")) {
+                // For Debugging Purposes
+                printf("Received 'showTree' command.\n");
+                char * name = strdup(strtok(NULL, "\n"));
+                printTree(name, readylist);
 
             } else {
                 printf("Invalid command; please try again.\n");
