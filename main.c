@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "structures.h"
 #include "macros.h"
@@ -17,6 +18,15 @@ int main(int argc, char * argv[]){
 		printf("Processing file...\n");
 
 	} else {
+
+        // Initialize System
+        ReadyList * readylist = initReadyList();
+        BlockList * blocklist = initBlockList();
+        PCB * init = create("init", 0, NULL, readylist);
+        //printf(readylist->user);
+        //printf(readylist->system);
+
+
 		size_t size; ssize_t input_size; char * input = NULL;
 
         printf("shell >> ");
@@ -50,6 +60,10 @@ int main(int argc, char * argv[]){
             }
             printf("shell >> ");
 		}
+
+        // Freeing Resources
+        freeBlockList(blocklist);
+        freeReadyList(readylist);
 	}
 
 }
