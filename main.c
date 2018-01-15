@@ -23,6 +23,7 @@ int main(int argc, char * argv[]){
         ReadyList * readylist = initReadyList();
         BlockList * blocklist = initBlockList();
         PCB * init = create("init", 0, NULL, readylist);
+
         //printf(readylist->user);
         //printf(readylist->system);
 
@@ -35,6 +36,12 @@ int main(int argc, char * argv[]){
 
             if(!strcmp(command, "init")) {
                 printf("Received 'init' command.\n");
+                freeReadyList(readylist);
+                freeBlockList(blocklist);
+                readylist = initReadyList();
+                blocklist = initBlockList();
+                init = create("init", 0, NULL, readylist);
+
 
             } else if (!strcmp(command, "cr")) {
                 printf("Received 'cr' command.\n");

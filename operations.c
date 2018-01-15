@@ -18,6 +18,29 @@ ReadyList * initReadyList(){
 
 void freeReadyList(ReadyList * readylist){
     // Insert some check that all ready lists (i.e. init, sys, user are free)
+    ProcessNode * current_node;
+
+    current_node = readylist->system;
+    while(current_node != NULL){
+        ProcessNode * temp = current_node;
+        current_node = current_node->next;
+        free(temp->process);
+        free(temp);
+    }
+    current_node = readylist->user;
+    while(current_node != NULL){
+        ProcessNode * temp = current_node;
+        current_node = current_node->next;
+        free(temp->process);
+        free(temp);
+    }
+    current_node = readylist->init;
+    while(current_node != NULL){
+        ProcessNode * temp = current_node;
+        current_node = current_node->next;
+        free(temp->process);
+        free(temp);
+    }
     free(readylist);
 }
 
@@ -127,7 +150,6 @@ void insert(ReadyList * readylist, PCB * process){
         }
     }
 }
-
 
 // Main Operations
 PCB * create (const char * name, int priority, PCB * curr_process, ReadyList * readylist){

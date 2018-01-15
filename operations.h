@@ -19,7 +19,6 @@ ProcessNode * deleteChild(PCB * src, const char * child_id);
 
 void insert(ReadyList * readylist, PCB * process);
 
-
 // Main Operations
 PCB * create (const char * name, int priority, PCB * curr_process, ReadyList * readylist);
 
