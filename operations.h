@@ -13,6 +13,8 @@ RCB * initResource(const char * name, int resource_count);
 BlockList * initBlockList();
 void freeBlockList(BlockList * blocklist);
 
+void deleteChildren(PCB * src);
+
 ProcessNode * createNode(PCB * process, ProcessNode * next);
 ProcessNode * addChild(PCB * src, PCB * new_pcb);
 ProcessNode * deleteChild(PCB * src, const char * child_id);

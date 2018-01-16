@@ -16,7 +16,6 @@ ReadyList * initReadyList(){
     readylist->user = NULL;
     return readylist;
 }
-
 void freeReadyList(ReadyList * readylist){
     // Insert some check that all ready lists (i.e. init, sys, user are free)
     ProcessNode * current_node;
@@ -44,7 +43,6 @@ void freeReadyList(ReadyList * readylist){
     }
     free(readylist);
 }
-
 RCB * initResource(const char * name, int resource_count){
     RCB * resource = (RCB *)malloc(sizeof(RCB));
     resource->rid = strdup(name);
@@ -52,7 +50,6 @@ RCB * initResource(const char * name, int resource_count){
     resource->waitinglist = NULL;
     return resource;
 }
-
 BlockList * initBlockList(){
     BlockList * blocklist = (BlockList *)malloc(sizeof(BlockList));
     blocklist->r1 = initResource("R1", 1);
@@ -61,7 +58,6 @@ BlockList * initBlockList(){
     blocklist->r4 = initResource("R4", 4);
     return blocklist;
 }
-
 void freeBlockList(BlockList * blocklist){
     free(blocklist->r1);
     free(blocklist->r2);
@@ -70,13 +66,28 @@ void freeBlockList(BlockList * blocklist){
     free(blocklist);
 }
 
+void deleteChildren(PCB * src){
+    ProcessNode * child = src->child;
+
+    // WIP
+    while(child != NULL) {
+        printf("Gets here 0\n");
+        ProcessNode * temp = child;
+        printf("Gets here 1\n");
+        deleteChildren(temp->process);
+        printf("Gets here 2\n");
+        child = child->next;
+        free(temp->process);
+        free(temp);
+    }
+}
+
 ProcessNode * createNode(PCB * process, ProcessNode * next){
     ProcessNode * new_node = (ProcessNode *)malloc(sizeof(ProcessNode));
     new_node->process = process;
     new_node->next = next;
     return new_node;
 }
-
 ProcessNode * addChild(PCB * src, PCB * new_pcb){
     if (src->child == NULL){
         src->child = createNode(new_pcb, NULL);
@@ -90,7 +101,6 @@ ProcessNode * addChild(PCB * src, PCB * new_pcb){
         return temp->next;
     }
 }
-
 ProcessNode * deleteChild(PCB * src, const char * child_id){
     ProcessNode * head = src->child;
     // Checks if there are no nodes
@@ -192,7 +202,6 @@ void scheduler(PCB * active_process, ReadyList * readylist){
 //
 // Debugging
 //
-
 void printReadyList(ReadyList * readylist, int priority){
     // Prints every process in the ready list with specified priority
     ProcessNode * temp = NULL;
@@ -204,18 +213,20 @@ void printReadyList(ReadyList * readylist, int priority){
         temp = readylist->system;
     }
     if(temp != NULL) {
-        printf("Processes with priority level %d: ", priority);
+        printf("\tProcesses with priority level %d: ", priority);
         while (temp != NULL) {
             PCB *proc = temp->process;
-            printf("%s, ", proc->pid);
+            printf("%s", proc->pid);
             temp = temp->next;
+            if(temp != NULL){
+                printf(", ");
+            }
         }
         printf("\n");
     } else {
-        printf("No processes with priority level %d\n", priority);
+        printf("\tNo processes with priority level %d\n", priority);
     }
 }
-
 void printTree(char * name, ReadyList * readylist){
     int counter = 3;
     while(counter != 0) {
@@ -230,10 +241,10 @@ void printTree(char * name, ReadyList * readylist){
         while (temp != NULL) {
             PCB *proc = temp->process;
             if (!strcmp(proc->pid, name)) {
-                printf("Process: %s\n", proc->pid);
-                printf("Parent: %s\n", proc->parent->pid);
+                printf("\tProcess: %s\n", proc->pid);
+                printf("\tParent: %s\n", proc->parent->pid);
                 ProcessNode * child = proc->child;
-                printf("Children: ");
+                printf("\tChildren: ");
                 if(child == NULL){
                     printf("None.\n");
                 }
