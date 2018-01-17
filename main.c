@@ -22,7 +22,7 @@ int main(int argc, char * argv[]){
         // Initialize System
         ReadyList * readylist = readyInit();
         ResourceList * resourcelist = resourceInit();
-        PCB * active_process = create("init", 0, NULL, readylist);
+        PCB * active_process = create("init", 0, readylist);
 
         // Initialize Shell
 		size_t size; ssize_t input_size; char * input = NULL;
@@ -33,10 +33,10 @@ int main(int argc, char * argv[]){
             if(!strcmp(command, "init")) {
                 printf("\tReceived 'init' command.\n");
                 readyFree(readylist);
-                freeResourceList(resourcelist);
+                resourceFree(resourcelist);
                 readylist = readyInit();
                 resourcelist = resourceInit();
-                active_process = create("init", 0, NULL, readylist);
+                active_process = create("init", 0, readylist);
                 // Write to file : "init"
 
 
@@ -44,39 +44,35 @@ int main(int argc, char * argv[]){
                 printf("\tReceived 'cr' command.\n");
                 char * name = strdup(strtok(NULL, " \n"));
                 int priority = (int) strtol(strdup(strtok(NULL, " \n")), NULL, 10);
-                if(strtok(NULL, " \n")){
+
+                if(strtok(NULL, " \n") || priority == INIT || !strcmp(name, "init")){
                     printf("\tInvalid command; please try again.\n");
+                } else {
+                    PCB *temp = create(name, priority, readylist);
                 }
-                PCB * temp = create(name, priority, active_process, readylist);
 
             } else if (!strcmp(command, "de")) {
                 printf("\tReceived 'de' command.\n");
                 char * name = strdup(strtok(NULL, " \n"));
-                int counter = 3;
-                while(counter > 0) {
-                    ProcessNode ** head;
+                ProcessNode ** prioritylist = readylist->priorities;
+                int found = 0;
 
-                    if (counter == 3) {
-                        head = &readylist->system;
-                    } else if (counter == 2) {
-                        head = &readylist->user;
-                    } else if (counter == 1) {
-                        head = &readylist->init;
-                    }
-
-                    ProcessNode * temp = *head;
+                for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
+                    ProcessNode ** pnode = &prioritylist[i];
+                    ProcessNode * temp = *pnode;
                     ProcessNode * prev = temp;
                     PCB * proc;
 
-                    if(temp != NULL && !strcmp((proc = temp->process)->pid, name)) {
-                        *head = temp->next;
+                    if(temp != NULL && !strcmp(getProcessName(proc = temp->process), name)) {
+                        *pnode = temp->next;
                         deleteChildren(proc);
                         free(proc);
                         free(temp);
+                        found = 1;
                         break;
                     }
 
-                    while (temp != NULL && strcmp(proc->pid, name) != 0) {
+                    while (temp != NULL && strcmp(getProcessName(proc), name) != 0) {
                         prev = temp;
                         temp = temp->next;
                         if(temp != NULL) {
@@ -84,17 +80,16 @@ int main(int argc, char * argv[]){
                         }
                     }
                     if(temp == NULL) {
-                        --counter;
                         continue;
                     }
                     prev->next = temp->next;
                     deleteChildren(proc);
                     free(proc);
                     free(temp);
-                    break;
+                    found = 1;
                 }
 
-                if(counter <= 0){
+                if(!found){
                     printf("\tProcess %s does not exist.\n", name);
                 }
 
@@ -114,10 +109,7 @@ int main(int argc, char * argv[]){
 
             } else if (!strcmp(command, "showProcesses")) {
                 // For Debugging Purposes
-                //printReadyList(readylist, SYSTEM);
-                //printReadyList(readylist, USER);
-                //printReadyList(readylist, INIT);
-                printReadyList(readylist2);
+                printReadyList(readylist);
 
             } else if (!strcmp(command, "showTree")) {
                 // For Debugging Purposes
@@ -131,8 +123,8 @@ int main(int argc, char * argv[]){
 		}
 
         // Freeing Resources
-        freeResourceList(resourcelist);
         readyFree(readylist);
+        resourceFree(resourcelist);
 	}
 
 }

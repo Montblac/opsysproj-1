@@ -5,8 +5,6 @@
 #ifndef CS143B_OPERATIONS_H
 #define CS143B_OPERATIONS_H
 
-// Helper Functions
-
 // # Linked List
 ProcessNode * nodeCreate(PCB * process, ProcessNode * next);
 ProcessNode * childAdd(PCB * src, PCB * new_pcb);
@@ -18,36 +16,34 @@ int getProcessState(PCB * process);
 int getProcessPriority(PCB * process);
 
 // # Resource Control Block
+char * getResourceName(RCB * resource);
+int getResourceSize(RCB * resource);
+int getResourceSpace(RCB * resource);
+ProcessNode * getResourceWaitlist(RCB * resource);
 
 // # Ready List
 ReadyList * readyInit();
 void readyFree(ReadyList * readylist);
 void readyInsert(ReadyList * readylist, PCB * process);
 
-// Resource List
-
-
-
-
-
-
-RCB * resourceInit(const char * name, int resource_count);
+// # Resource List
+RCB * resourceCreate(const char * name, int resource_count);
 ResourceList * resourceInit();
-void freeResourceList(ResourceList * resourcelist);
+void resourceFree(ResourceList * resourcelist);
 
-void deleteChildren(PCB * src);
+// # Debugging
+void printReadyList(ReadyList * readylist);
+void printTree(const char * name, ReadyList * readylist);
 
-// Main Operations
-PCB * create(const char * name, int priority, PCB * curr_process, ReadyList * readylist);
+
+
+
+// # Main Operations
+PCB * create(const char * name, int priority, ReadyList * readylist);
 void scheduler(PCB * active_process, ReadyList * readylist);
 
-// Debugging
-//void printReadyList(ReadyList * readylist, int priority);
-void printReadyList(ReadyList * readylist);
-void printTree(char * name, ReadyList * readylist);
 
-
-// Testing
-ResourceListFixed * resourceInitFixed();
+// WORK IN PROGRESS
+void deleteChildren(PCB * src);
 
 #endif //CS143B_OPERATIONS_H
