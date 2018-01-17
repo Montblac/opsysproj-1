@@ -10,4 +10,7 @@
 #define USER 1
 #define SYSTEM 2
 
+#define NUM_OF_RESOURCES 4
+#define NUM_OF_PRIORITIES 3
+
 #endif

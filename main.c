@@ -20,27 +20,22 @@ int main(int argc, char * argv[]){
 	} else {
 
         // Initialize System
-        ReadyList * readylist = initReadyList();
-        BlockList * blocklist = initBlockList();
+        ReadyList * readylist = readyInit();
+        ResourceList * resourcelist = resourceInit();
         PCB * active_process = create("init", 0, NULL, readylist);
 
-
-        //printf(readylist->user);
-        //printf(readylist->system);
-
-
+        // Initialize Shell
 		size_t size; ssize_t input_size; char * input = NULL;
-
         printf("shell >> ");
         while( (input_size = getline(&input, &size, stdin) ) != EOF ){
             char * command = strtok(input, " \n");
 
             if(!strcmp(command, "init")) {
                 printf("\tReceived 'init' command.\n");
-                freeReadyList(readylist);
-                freeBlockList(blocklist);
-                readylist = initReadyList();
-                blocklist = initBlockList();
+                readyFree(readylist);
+                freeResourceList(resourcelist);
+                readylist = readyInit();
+                resourcelist = resourceInit();
                 active_process = create("init", 0, NULL, readylist);
                 // Write to file : "init"
 
@@ -119,9 +114,10 @@ int main(int argc, char * argv[]){
 
             } else if (!strcmp(command, "showProcesses")) {
                 // For Debugging Purposes
-                printReadyList(readylist, SYSTEM);
-                printReadyList(readylist, USER);
-                printReadyList(readylist, INIT);
+                //printReadyList(readylist, SYSTEM);
+                //printReadyList(readylist, USER);
+                //printReadyList(readylist, INIT);
+                printReadyList(readylist2);
 
             } else if (!strcmp(command, "showTree")) {
                 // For Debugging Purposes
@@ -135,8 +131,8 @@ int main(int argc, char * argv[]){
 		}
 
         // Freeing Resources
-        freeBlockList(blocklist);
-        freeReadyList(readylist);
+        freeResourceList(resourcelist);
+        readyFree(readylist);
 	}
 
 }

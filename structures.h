@@ -5,18 +5,13 @@
 #ifndef CS143B_STRUCTURES_H
 #define CS143B_STRUCTURES_H
 
-typedef struct ReadyList {
-    struct ProcessNode * init;
-    struct ProcessNode * user;
-    struct ProcessNode * system;
+typedef struct ReadyList{
+    struct ProcessNode * priorities[3];
 } ReadyList;
 
-typedef struct BlockList {
-    struct RCB * r1;
-    struct RCB * r2;
-    struct RCB * r3;
-    struct RCB * r4;
-} BlockList;
+typedef struct ResourceList{
+    struct RCB * resources[4];
+} ResourceList;
 
 typedef struct ProcessNode {
     struct PCB * process;
@@ -32,20 +27,19 @@ typedef struct PCB {
     char * pid;	                // Process Name
     int state;                  // State
     int priority;               // Priority
-    int blocked;                // Blocked Status
 
-    ResourceNode * resourcelist;	// Linked List of Resources
+    ResourceNode * resources;	// Linked List of Resources
     struct PCB * parent;	        // Parent
     ProcessNode * child;    	    // Linked List of Children
-    BlockList * blocklist;          // Pointer to blocklist
+    ResourceList * resourcelist;    // Pointer to resourcelist
     ReadyList * readylist;          // Pointer to readylist
 } PCB;
 
 typedef struct RCB {
     char * rid;
+    int size;
     int inventory;
     ProcessNode * waitinglist;
 } RCB;
-
 
 #endif //CS143B_STRUCTURES_H
