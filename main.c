@@ -22,7 +22,9 @@ int main(int argc, char * argv[]){
         // Initialize System
         ReadyList * readylist = readyInit();
         ResourceList * resourcelist = resourceInit();
-        PCB * active_process = create("init", 0, readylist);
+        PCB * active_process = init(readylist);
+        printf("\t*Process %s is running\n", getProcessName(active_process));
+
 
         // Initialize Shell
 		size_t size; ssize_t input_size; char * input = NULL;
@@ -31,66 +33,30 @@ int main(int argc, char * argv[]){
             char * command = strtok(input, " \n");
 
             if(!strcmp(command, "init")) {
-                printf("\tReceived 'init' command.\n");
                 readyFree(readylist);
                 resourceFree(resourcelist);
                 readylist = readyInit();
                 resourcelist = resourceInit();
-                active_process = create("init", 0, readylist);
+                active_process = init(readylist);
                 // Write to file : "init"
 
 
             } else if (!strcmp(command, "cr")) {
-                printf("\tReceived 'cr' command.\n");
                 char * name = strdup(strtok(NULL, " \n"));
                 int priority = (int) strtol(strdup(strtok(NULL, " \n")), NULL, 10);
 
                 if(strtok(NULL, " \n") || priority == INIT || !strcmp(name, "init")){
                     printf("\tInvalid command; please try again.\n");
                 } else {
-                    PCB *temp = create(name, priority, readylist);
+                    create(name, priority, readylist, &active_process);
                 }
 
             } else if (!strcmp(command, "de")) {
-                printf("\tReceived 'de' command.\n");
-                char * name = strdup(strtok(NULL, " \n"));
-                ProcessNode ** prioritylist = readylist->priorities;
-                int found = 0;
-
-                for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
-                    ProcessNode ** pnode = &prioritylist[i];
-                    ProcessNode * temp = *pnode;
-                    ProcessNode * prev = temp;
-                    PCB * proc;
-
-                    if(temp != NULL && !strcmp(getProcessName(proc = temp->process), name)) {
-                        *pnode = temp->next;
-                        deleteChildren(proc);
-                        free(proc);
-                        free(temp);
-                        found = 1;
-                        break;
-                    }
-
-                    while (temp != NULL && strcmp(getProcessName(proc), name) != 0) {
-                        prev = temp;
-                        temp = temp->next;
-                        if(temp != NULL) {
-                            proc = temp->process;
-                        }
-                    }
-                    if(temp == NULL) {
-                        continue;
-                    }
-                    prev->next = temp->next;
-                    deleteChildren(proc);
-                    free(proc);
-                    free(temp);
-                    found = 1;
-                }
-
-                if(!found){
-                    printf("\tProcess %s does not exist.\n", name);
+                char * pid = strdup(strtok(NULL, " \n"));
+                if(!strcmp(pid, "init")){
+                    printf("\tCannot delete %s process.\n", pid);
+                } else if (!delete(pid, readylist)){
+                    printf("\tProcess %s does not exist.\n", pid);
                 }
 
 
@@ -119,6 +85,7 @@ int main(int argc, char * argv[]){
             } else {
                 printf("\tInvalid command; please try again.\n");
             }
+            printf("\t*Process %s is running\n", getProcessName(active_process));
             printf("shell >> ");
 		}
 
