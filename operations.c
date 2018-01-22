@@ -58,6 +58,21 @@ ProcessNode * deleteChild(PCB * src, const char * child_id){
     }
     return src->child;
 }
+void deleteChildren(PCB * src){
+    ProcessNode * child = src->child;
+
+    // WIP
+    while(child != NULL) {
+        printf("Gets here 0\n");
+        ProcessNode * temp = child;
+        printf("Gets here 1\n");
+        deleteChildren(temp->process);
+        printf("Gets here 2\n");
+        child = child->next;
+        free(temp->process);
+        free(temp);
+    }
+}
 
 // # Process Control Block (PCB)
 char * getProcessName(PCB * process){
@@ -68,6 +83,9 @@ int getProcessState(PCB * process){
 }
 int getProcessPriority(PCB * process){
     return process->priority;
+}
+void setProcessState(PCB * process, int state){
+    process->state = state;
 }
 
 // # Resource Control Block (RCB)
@@ -132,6 +150,18 @@ void readyInsert(ReadyList * readylist, PCB * process){
             (*pnode_list)->next = new_node;
         }
     }
+}
+PCB * init(ReadyList * readylist){
+    PCB * new_process = (PCB *)malloc(sizeof(struct PCB));
+    new_process->pid = strdup("init");
+    new_process->priority = INIT;
+    readyInsert(readylist, new_process);
+    setProcessState(new_process, RUNNING);
+    return new_process;
+}
+void preempt(PCB ** active_proc, PCB * new_proc){
+    setProcessState(new_proc, RUNNING);
+    *active_proc = new_proc;
 }
 
 // # Resource List
@@ -224,62 +254,80 @@ void printTree(const char * name, ReadyList * readylist){
 //
 // Main Operations
 //
-PCB * create (const char * name, int priority, ReadyList * readylist){
+
+
+void scheduler(PCB ** active_proc, ReadyList * readylist){
+    PCB * highest_proc;
+    ProcessNode ** prioritylist = readylist->priorities;
+    for(int i = NUM_OF_PRIORITIES - 1; i >= 0; --i) {
+        ProcessNode * pnode = prioritylist[i];
+        if (pnode != NULL) {
+            highest_proc = pnode->process;
+            break;
+        }
+    }
+    if(getProcessPriority(*active_proc) < getProcessPriority(highest_proc) ||
+       getProcessState(*active_proc) != RUNNING ||
+       *active_proc == NULL) {
+        preempt(active_proc, highest_proc);
+    }
+}
+void create (const char * name, int priority, ReadyList * readylist, PCB ** active_process){
     PCB * new_process = malloc(sizeof(struct PCB));
-    PCB * active_process = getActiveProcess(readylist);
     new_process->pid = strdup(name);
     new_process->priority = priority;
-    if(priority != INIT) {
-        new_process->parent = active_process;
-        childAdd(active_process, new_process);
-    }
+    new_process->parent = *active_process;
+    childAdd(*active_process, new_process);
 
     readyInsert(readylist, new_process);
-    //Scheduler()
-    return new_process;
+    setProcessState(*active_process, READY);
+    scheduler(active_process, readylist);
 }
+int delete(const char * pid, ReadyList * readylist){
+    ProcessNode ** prioritylist = readylist->priorities;
+    for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
+        ProcessNode ** pnode = &prioritylist[i];
+        ProcessNode * temp = *pnode;
+        ProcessNode * prev = temp;
+        PCB * proc;
+
+        if(temp != NULL && !strcmp(getProcessName(proc = temp->process), pid)) {
+            *pnode = temp->next;
+            deleteChildren(proc);
+            free(proc);
+            free(temp);
+            return 1;
+        }
+
+        while (temp != NULL && strcmp(getProcessName(proc), pid) != 0) {
+            prev = temp;
+            temp = temp->next;
+            if(temp != NULL) {
+                proc = temp->process;
+            }
+        }
+        if(temp == NULL) {
+            continue;
+        }
+        prev->next = temp->next;
+        deleteChildren(proc);
+        free(proc);
+        free(temp);
+        return 1;
+    }
+    return 0;
+}
+
 /*
 void request(const char * rid, int units, ResourceList * resourcelist){
     RCB * resource = resourcelist->r1;
 }
-void scheduler(PCB * active_process, ReadyList * readylist){
-    PCB * highest_ready;
-    if(readylist->system != NULL){
-        ProcessNode * temp = readylist->system;
-        highest_ready = temp->process;
-    } else if (readylist->user){
-        ProcessNode * temp = readylist->user;
-        highest_ready = temp->process;
-    } else {
-        ProcessNode * temp = readylist->init;
-        highest_ready = temp->process;
-    }
-
-    if(active_process->priority < highest_ready->priority ||
-            active_process->state != RUNNING ||
-            active_process == NULL){
-        active_process = highest_ready;
-    }
-}
-
 */
+
+
+
+
 // WORK IN PROGRESS
-void deleteChildren(PCB * src){
-    ProcessNode * child = src->child;
-
-    // WIP
-    while(child != NULL) {
-        printf("Gets here 0\n");
-        ProcessNode * temp = child;
-        printf("Gets here 1\n");
-        deleteChildren(temp->process);
-        printf("Gets here 2\n");
-        child = child->next;
-        free(temp->process);
-        free(temp);
-    }
-}
-
  /*
 RCB * getResource(const char * rid, ResourceList * resourcelist){
     return resourcelist->r1;

@@ -22,14 +22,18 @@ int getResourceSpace(RCB * resource);
 ProcessNode * getResourceWaitlist(RCB * resource);
 
 // # Ready List
+PCB * getActiveProcess(ReadyList * readylist);
 ReadyList * readyInit();
 void readyFree(ReadyList * readylist);
 void readyInsert(ReadyList * readylist, PCB * process);
+PCB * init(ReadyList * readylist);
+void preempt(PCB ** active_proc, PCB * new_proc);
 
 // # Resource List
 RCB * resourceCreate(const char * name, int resource_count);
 ResourceList * resourceInit();
 void resourceFree(ResourceList * resourcelist);
+
 
 // # Debugging
 void printReadyList(ReadyList * readylist);
@@ -39,8 +43,11 @@ void printTree(const char * name, ReadyList * readylist);
 
 
 // # Main Operations
-PCB * create(const char * name, int priority, ReadyList * readylist);
-void scheduler(PCB * active_process, ReadyList * readylist);
+
+void scheduler(PCB ** active_proc, ReadyList * readylist);
+void create(const char * name, int priority, ReadyList * readylist, PCB ** active_process);
+int delete(const char * pid, ReadyList * readylist);
+
 
 
 // WORK IN PROGRESS
