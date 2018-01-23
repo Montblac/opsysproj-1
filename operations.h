@@ -34,6 +34,10 @@ RCB * resourceCreate(const char * name, int resource_count);
 ResourceList * resourceInit();
 void resourceFree(ResourceList * resourcelist);
 
+// Input-Checking
+int isWord(const char * input);
+int isNumber(const char * input);
+int isInRange(const int num);
 
 // # Debugging
 void printReadyList(ReadyList * readylist);
@@ -46,7 +50,7 @@ void printTree(const char * name, ReadyList * readylist);
 
 void scheduler(PCB ** active_proc, ReadyList * readylist);
 void create(const char * name, int priority, ReadyList * readylist, PCB ** active_process);
-int delete(const char * pid, ReadyList * readylist);
+int delete(const char * pid, ReadyList * readylist, PCB ** active_process);
 
 
 

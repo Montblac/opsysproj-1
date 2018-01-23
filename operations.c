@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <ctype.h>
 #include "macros.h"
 #include "structures.h"
 
@@ -190,6 +191,33 @@ void resourceFree(ResourceList * resourcelist){
     free(resourcelist);
 }
 
+// Input-Checking
+int isWord(const char * input){
+    if(input == NULL) {
+        return 0;
+    }
+    for (int i = 0; i < strlen(input); ++i) {
+        if (!isalpha(input[i])) {
+            return 0;
+        }
+    }
+    return 1;
+}
+int isNumber(const char * input){
+    if(input == NULL){
+        return 0;
+    }
+    for(int i = 0; i < strlen(input); ++i){
+        if(!isdigit(input[i])){
+            return 0;
+        }
+    }
+    return 1;
+
+}
+int isInRange(const int num){
+    return num == 1 || num == 2;
+}
 
 // # Debugging
 void printReadyList(ReadyList * readylist){
@@ -283,7 +311,7 @@ void create (const char * name, int priority, ReadyList * readylist, PCB ** acti
     setProcessState(*active_process, READY);
     scheduler(active_process, readylist);
 }
-int delete(const char * pid, ReadyList * readylist){
+int delete(const char * pid, ReadyList * readylist, PCB ** active_proc){
     ProcessNode ** prioritylist = readylist->priorities;
     for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
         ProcessNode ** pnode = &prioritylist[i];
@@ -296,6 +324,8 @@ int delete(const char * pid, ReadyList * readylist){
             deleteChildren(proc);
             free(proc);
             free(temp);
+            scheduler(active_proc, readylist);
+            printf("Finishing ...\n");
             return 1;
         }
 
@@ -313,6 +343,8 @@ int delete(const char * pid, ReadyList * readylist){
         deleteChildren(proc);
         free(proc);
         free(temp);
+        scheduler(active_proc, readylist);
+        printf("Finishing 1...\n");
         return 1;
     }
     return 0;

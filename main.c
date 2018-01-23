@@ -42,20 +42,29 @@ int main(int argc, char * argv[]){
 
 
             } else if (!strcmp(command, "cr")) {
-                char * name = strdup(strtok(NULL, " \n"));
-                int priority = (int) strtol(strdup(strtok(NULL, " \n")), NULL, 10);
+                char * temp = strtok(NULL, " \n");
+                char * name = isWord(temp) ? strdup(temp) : NULL;
 
-                if(strtok(NULL, " \n") || priority == INIT || !strcmp(name, "init")){
+                temp = strtok(NULL, " \n");
+                char * priority = isNumber(temp) ? strdup(temp) : NULL;
+                int pval = priority != NULL ? (int) strtol(priority, NULL, 10) : -1;
+
+                if(name && priority && strtok(NULL, " \n") == NULL && isInRange(pval) ){
+                    create(name, pval, readylist, &active_process);
+                }
+                else {
                     printf("\tInvalid command; please try again.\n");
-                } else {
-                    create(name, priority, readylist, &active_process);
                 }
 
             } else if (!strcmp(command, "de")) {
-                char * pid = strdup(strtok(NULL, " \n"));
-                if(!strcmp(pid, "init")){
+                char * temp = (strtok(NULL, " \n"));
+                char * pid = isWord(temp) ? strdup(temp) : NULL;
+
+                if(!pid || strtok(NULL, " \n")){
+                    printf("\tInvalid command; please try again.\n");
+                } else if (!strcmp(pid, "init")){
                     printf("\tCannot delete %s process.\n", pid);
-                } else if (!delete(pid, readylist)){
+                } else if (!delete(pid, readylist, &active_process)){
                     printf("\tProcess %s does not exist.\n", pid);
                 }
 
