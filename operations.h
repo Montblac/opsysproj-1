@@ -5,15 +5,11 @@
 #ifndef CS143B_OPERATIONS_H
 #define CS143B_OPERATIONS_H
 
-// # Linked List
-ProcessNode * nodeCreate(PCB * process, ProcessNode * next);
-ProcessNode * childAdd(PCB * src, PCB * new_pcb);
-ProcessNode * deleteChild(PCB * src, const char * child_id);
-
 // # Process Control Block
 char * getProcessName(PCB * process);
 int getProcessState(PCB * process);
 int getProcessPriority(PCB * process);
+void setProcessState(PCB * process, int state);
 
 // # Resource Control Block
 char * getResourceName(RCB * resource);
@@ -21,18 +17,39 @@ int getResourceSize(RCB * resource);
 int getResourceSpace(RCB * resource);
 ProcessNode * getResourceWaitlist(RCB * resource);
 
+// # Linked List
+ProcessNode * nodeCreate(PCB * process, ProcessNode * next);
+ProcessNode * childAdd(PCB * src, PCB * new_pcb);
+
+
 // # Ready List
-PCB * getActiveProcess(ReadyList * readylist);
+PCB * findProcess(const char * pid, ReadyList * readylist);
 ReadyList * readyInit();
 void readyFree(ReadyList * readylist);
 void readyInsert(ReadyList * readylist, PCB * process);
 PCB * init(ReadyList * readylist);
-void preempt(PCB ** active_proc, PCB * new_proc);
 
 // # Resource List
 RCB * resourceCreate(const char * name, int resource_count);
 ResourceList * resourceInit();
 void resourceFree(ResourceList * resourcelist);
+
+
+
+// # Scheduler
+void preempt(PCB ** active_proc, PCB * new_proc);
+void scheduler(PCB ** active_proc, ReadyList * readylist);
+
+// ## Create
+void create(const char * name, int priority, ReadyList * readylist, PCB ** active_process);
+
+// ## Delete
+void killProcess(ReadyList * readylist, const char * pid);
+void killChild(ProcessNode ** pnode, const char * pid);
+void killTree(PCB * src, ReadyList * readylist);
+int updateParent(PCB * src);
+int delete(const char * pid, ReadyList * readylist, PCB ** active_process);
+
 
 // Input-Checking
 int isWord(const char * input);
@@ -44,17 +61,5 @@ void printReadyList(ReadyList * readylist);
 void printTree(const char * name, ReadyList * readylist);
 
 
-
-
-// # Main Operations
-
-void scheduler(PCB ** active_proc, ReadyList * readylist);
-void create(const char * name, int priority, ReadyList * readylist, PCB ** active_process);
-int delete(const char * pid, ReadyList * readylist, PCB ** active_process);
-
-
-
-// WORK IN PROGRESS
-void deleteChildren(PCB * src);
 
 #endif //CS143B_OPERATIONS_H
