@@ -92,7 +92,7 @@ void readyFree(ReadyList * readylist){
     }
     free(readylist);
 }
-void readyInsert(ReadyList * readylist, PCB * process){
+void insertProcess(ReadyList * readylist, PCB * process){
     int priority = getProcessPriority(process);
     ProcessNode ** pnode_list = &(readylist->priorities)[priority];
     ProcessNode * new_node = nodeCreate(process, NULL);
@@ -111,11 +111,38 @@ void readyInsert(ReadyList * readylist, PCB * process){
         }
     }
 }
+PCB * removeProcess(ReadyList * readylist, PCB * process){
+    for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
+        ProcessNode ** priority = &(readylist->priorities[i]);
+        ProcessNode * head = *priority;
+        ProcessNode * prev = head;
+
+        if(head != NULL &&
+                head->process != NULL &&
+                !strcmp(getProcessName(process), getProcessName(head->process))){
+            *priority = head->next;
+            return head->process;
+        }
+
+        while(head != NULL &&
+                head->process != NULL &&
+                strcmp(getProcessName(process), getProcessName(head->process))){
+            prev = head;
+            head = head->next;
+        }
+        if(head == NULL){
+            continue;
+        }
+        prev->next = head->next;
+        return head->process;
+    }
+    return NULL;
+}
 PCB * init(ReadyList * readylist){
     PCB * new_process = (PCB *)malloc(sizeof(struct PCB));
     new_process->pid = strdup("init");
     new_process->priority = INIT;
-    readyInsert(readylist, new_process);
+    insertProcess(readylist, new_process);
     setProcessState(new_process, RUNNING);
     return new_process;
 }
@@ -170,6 +197,14 @@ void scheduler(PCB ** active_proc, ReadyList * readylist){
     }
 }
 
+// # Time-out Interrupt
+void timeout(ReadyList * readylist, PCB ** active_process){
+    PCB * process = removeProcess(readylist, *active_process);
+    setProcessState(process, READY);
+    insertProcess(readylist, process);
+    scheduler(active_process, readylist);
+}
+
 
 // ## Create
 void create (const char * name, int priority, ReadyList * readylist, PCB ** active_process){
@@ -179,7 +214,7 @@ void create (const char * name, int priority, ReadyList * readylist, PCB ** acti
     new_process->parent = *active_process;
     childAdd(*active_process, new_process);
 
-    readyInsert(readylist, new_process);
+    insertProcess(readylist, new_process);
     setProcessState(*active_process, READY);
     scheduler(active_process, readylist);
 }
@@ -269,37 +304,21 @@ int delete(const char * pid, ReadyList * readylist, PCB ** active_proc){
     for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
         ProcessNode ** pnode = &prioritylist[i];
         ProcessNode * temp = *pnode;
-        ProcessNode * prev = temp;
         PCB * proc;
 
-        if(temp != NULL && !strcmp(getProcessName(proc = temp->process), pid)) {
-            if (!strcmp(getProcessName(*active_proc), getProcessName(proc))) {
-                *active_proc = NULL;
+        while(temp != NULL){
+            if(!strcmp(getProcessName(proc = temp->process), pid)){
+                if(!strcmp(getProcessName(*active_proc), getProcessName(proc))){
+                    *active_proc = NULL;
+                }
+                killTree(proc, readylist);
+                updateParent(proc);
+                killProcess(readylist, pid);
+                scheduler(active_proc, readylist);
+                return 1;
             }
-            killTree(proc, readylist);
-            updateParent(proc);
-            killProcess(readylist, pid);
-            scheduler(active_proc, readylist);
-            return 1;
-        }
-        while(temp != NULL && strcmp(getProcessName(proc), pid)){
-            prev = temp;
             temp = temp->next;
-            if(temp != NULL){
-                proc = temp->process;
-            }
         }
-        if(temp == NULL){
-            continue;
-        }
-        if(!strcmp(getProcessName(*active_proc), getProcessName(proc))){
-            *active_proc = NULL;
-        }
-        killTree(proc, readylist);
-        updateParent(proc);
-        killProcess(readylist, pid);
-        scheduler(active_proc, readylist);
-        return 1;
     }
     return 0;
 }
@@ -329,7 +348,7 @@ int isNumber(const char * input){
     return 1;
 
 }
-int isInRange(const int num){
+int isInRange(int num){
     return num == 1 || num == 2;
 }
 

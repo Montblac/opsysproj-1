@@ -26,7 +26,8 @@ ProcessNode * childAdd(PCB * src, PCB * new_pcb);
 PCB * findProcess(const char * pid, ReadyList * readylist);
 ReadyList * readyInit();
 void readyFree(ReadyList * readylist);
-void readyInsert(ReadyList * readylist, PCB * process);
+void insertProcess(ReadyList * readylist, PCB * process);
+PCB * removeProcess(ReadyList * readylist, PCB * process);
 PCB * init(ReadyList * readylist);
 
 // # Resource List
@@ -39,6 +40,10 @@ void resourceFree(ResourceList * resourcelist);
 // # Scheduler
 void preempt(PCB ** active_proc, PCB * new_proc);
 void scheduler(PCB ** active_proc, ReadyList * readylist);
+
+// # Time-out Interrupt
+void timeout(ReadyList * readylist, PCB ** active_process);
+
 
 // ## Create
 void create(const char * name, int priority, ReadyList * readylist, PCB ** active_process);
@@ -54,7 +59,7 @@ int delete(const char * pid, ReadyList * readylist, PCB ** active_process);
 // Input-Checking
 int isWord(const char * input);
 int isNumber(const char * input);
-int isInRange(const int num);
+int isInRange(int num);
 
 // # Debugging
 void printReadyList(ReadyList * readylist);

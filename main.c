@@ -77,6 +77,7 @@ int main(int argc, char * argv[]){
 
             } else if (!strcmp(command, "to")) {
                 printf("\tReceived 'to' command.\n");
+                timeout(readylist, &active_process);
 
             } else if (!strcmp(command, "exit")) {
                 printf("\tExiting session...\n");
