@@ -1,4 +1,3 @@
-// Contains macro definitions of the three process states: ready, running, blocked
 #ifndef MACROS_H
 #define MACROS_H
 

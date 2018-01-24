@@ -29,17 +29,18 @@ int main(int argc, char * argv[]){
         // Initialize Shell
 		size_t size; ssize_t input_size; char * input = NULL;
         printf("shell >> ");
-        while( (input_size = getline(&input, &size, stdin) ) != EOF ){
+        while((input_size = getline(&input, &size, stdin) ) != EOF ){
             char * command = strtok(input, " \n");
 
-            if(!strcmp(command, "init")) {
+            if(command == NULL){
+                printf("\tPlease include a command.\n");
+
+            } else if(!strcmp(command, "init")) {
                 readyFree(readylist);
                 resourceFree(resourcelist);
                 readylist = readyInit();
                 resourcelist = resourceInit();
                 active_process = init(readylist);
-                // Write to file : "init"
-
 
             } else if (!strcmp(command, "cr")) {
                 char * temp = strtok(NULL, " \n");
