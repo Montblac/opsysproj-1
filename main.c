@@ -72,12 +72,22 @@ int main(int argc, char * argv[]){
 
             } else if (!strcmp(command, "req")) {
                 printf("\tReceived 'req' command.\n");
+                char * temp = strtok(NULL, " \n");
+                char * rid = strdup(temp);
+
+                temp = strtok(NULL, " \n");
+                char * units = isNumber(temp) ? strdup(temp) : NULL;
+                int value = units != NULL ? (int)strtol(units, NULL, 10) : -1;
+
+                if(rid && units && strtok(NULL, "\n") == NULL && isInRange2(value)){
+                    request(rid, value, resourcelist, readylist, &active_process);
+                }
+
 
             } else if (!strcmp(command, "rel")) {
                 printf("\tReceived 'rel' command.\n");
 
             } else if (!strcmp(command, "to")) {
-                printf("\tReceived 'to' command.\n");
                 timeout(readylist, &active_process);
 
             } else if (!strcmp(command, "exit")) {
