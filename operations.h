@@ -5,28 +5,34 @@
 #ifndef CS143B_OPERATIONS_H
 #define CS143B_OPERATIONS_H
 
-// # Process Control Block
+
+ProcessNode * createPNode(PCB * process, ProcessNode * next);
+ResourceNode * createRNode(RCB * resource, ResourceNode * next);
+
+// # Process Control Block (PCB)
 char * getProcessName(PCB * process);
 int getProcessState(PCB * process);
 int getProcessPriority(PCB * process);
 void setProcessState(PCB * process, int state);
 
-// # Resource Control Block
+// # Resource Control Block (RCB)
 char * getResourceName(RCB * resource);
 int getResourceSize(RCB * resource);
 int getResourceSpace(RCB * resource);
 ProcessNode * getResourceWaitlist(RCB * resource);
 
-// # Linked List
-ProcessNode * nodeCreate(PCB * process, ProcessNode * next);
-ProcessNode * childAdd(PCB * src, PCB * new_pcb);
+// # Insertion
+ProcessNode * insertChild(PCB * src, PCB * new_pcb);
+void insertProcess(ReadyList * readylist, PCB * process);
+void insertResource(PCB * process, RCB * resource, int n);
+void insertWaitlist(PCB * process, RCB * resource);
 
 
 // # Ready List
 PCB * findProcess(const char * pid, ReadyList * readylist);
 ReadyList * readyInit();
 void readyFree(ReadyList * readylist);
-void insertProcess(ReadyList * readylist, PCB * process);
+
 PCB * removeProcess(ReadyList * readylist, PCB * process);
 PCB * init(ReadyList * readylist);
 
@@ -34,6 +40,7 @@ PCB * init(ReadyList * readylist);
 RCB * resourceCreate(const char * name, int resource_count);
 ResourceList * resourceInit();
 void resourceFree(ResourceList * resourcelist);
+RCB * getResource(const char * rid, ResourceList * resourcelist);
 
 
 
@@ -55,11 +62,14 @@ void killTree(PCB * src, ReadyList * readylist);
 int updateParent(PCB * src);
 int delete(const char * pid, ReadyList * readylist, PCB ** active_process);
 
+// ## Request
+void request(const char * rid, int units, ResourceList * resourcelist, ReadyList * readylist, PCB ** active_process);
 
 // Input-Checking
 int isWord(const char * input);
 int isNumber(const char * input);
 int isInRange(int num);
+int isInRange2(int num);
 
 // # Debugging
 void printReadyList(ReadyList * readylist);
