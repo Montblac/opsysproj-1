@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "structures.h"
-#include "macros.h"
 #include "operations.h"
 
 
@@ -71,7 +70,6 @@ int main(int argc, char * argv[]){
 
 
             } else if (!strcmp(command, "req")) {
-                printf("\tReceived 'req' command.\n");
                 char * temp = strtok(NULL, " \n");
                 char * rid = strdup(temp);
 
