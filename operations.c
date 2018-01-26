@@ -18,6 +18,8 @@ ProcessNode * createPNode(PCB * process, ProcessNode * next){
 }
 ResourceNode * createRNode(RCB * resource, ResourceNode * next){
     ResourceNode * node = (ResourceNode*)malloc(sizeof(ResourceNode));
+    node->resource = resource;
+    node->next = next;
     return node;
 }
 
@@ -112,6 +114,35 @@ void insertWaitlist(PCB * process, RCB * resource){
     }
 }
 
+// # Deletion
+PCB * removeProcess(ReadyList * readylist, PCB * process){
+    for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
+        ProcessNode ** priority = &readylist->priorities[i];
+        ProcessNode * head = *priority;
+        ProcessNode * prev = head;
+
+        if(head != NULL &&
+           head->process != NULL &&
+           !strcmp(getProcessName(process), getProcessName(head->process))){
+            *priority = head->next;
+            return head->process;
+        }
+
+        while(head != NULL &&
+              head->process != NULL &&
+              strcmp(getProcessName(process), getProcessName(head->process))){
+            prev = head;
+            head = head->next;
+        }
+        if(head == NULL){
+            continue;
+        }
+        prev->next = head->next;
+        return head->process;
+    }
+    return NULL;
+}
+
 // # Ready List
 PCB * findProcess(const char * pid, ReadyList * readylist){
     for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
@@ -146,33 +177,6 @@ void readyFree(ReadyList * readylist){
     free(readylist);
 }
 
-PCB * removeProcess(ReadyList * readylist, PCB * process){
-    for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
-        ProcessNode ** priority = &(readylist->priorities[i]);
-        ProcessNode * head = *priority;
-        ProcessNode * prev = head;
-
-        if(head != NULL &&
-                head->process != NULL &&
-                !strcmp(getProcessName(process), getProcessName(head->process))){
-            *priority = head->next;
-            return head->process;
-        }
-
-        while(head != NULL &&
-                head->process != NULL &&
-                strcmp(getProcessName(process), getProcessName(head->process))){
-            prev = head;
-            head = head->next;
-        }
-        if(head == NULL){
-            continue;
-        }
-        prev->next = head->next;
-        return head->process;
-    }
-    return NULL;
-}
 PCB * init(ReadyList * readylist){
     PCB * new_process = (PCB *)malloc(sizeof(struct PCB));
     new_process->pid = strdup("init");
@@ -224,7 +228,7 @@ void preempt(PCB ** active_proc, PCB * new_proc){
     *active_proc = new_proc;
 }
 void scheduler(PCB ** active_proc, ReadyList * readylist){
-    PCB * highest_proc;
+    PCB * highest_proc = NULL;
     ProcessNode ** prioritylist = readylist->priorities;
     for(int i = NUM_OF_PRIORITIES - 1; i >= 0; --i) {
         ProcessNode * pnode = prioritylist[i];
@@ -368,7 +372,10 @@ int delete(const char * pid, ReadyList * readylist, PCB ** active_proc){
 void request(const char * rid, int units, ResourceList * resourcelist, ReadyList * readylist, PCB ** active_process){
     RCB * resource = getResource(rid, resourcelist);
     if(resource != NULL) {
-        if (units <= getResourceSpace(resource)) {
+        if(units > getResourceSize(resource)){
+            printf("\tInvalid command; request amount larger than size.\n");
+        }
+        else if (units <= getResourceSpace(resource)) {
             resource->inventory -= units;
             insertResource(*active_process, resource, units);
             printf("\tAdded resource %s to process %s.\n", rid, getProcessName(*active_process));
@@ -382,6 +389,8 @@ void request(const char * rid, int units, ResourceList * resourcelist, ReadyList
         scheduler(active_process, readylist);
     }
 }
+
+
 
 // # Input-Checking
 int isWord(const char * input){

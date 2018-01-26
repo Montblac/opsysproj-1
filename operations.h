@@ -27,13 +27,14 @@ void insertProcess(ReadyList * readylist, PCB * process);
 void insertResource(PCB * process, RCB * resource, int n);
 void insertWaitlist(PCB * process, RCB * resource);
 
+// # Deletion
+PCB * removeProcess(ReadyList * readylist, PCB * process);
 
 // # Ready List
 PCB * findProcess(const char * pid, ReadyList * readylist);
 ReadyList * readyInit();
 void readyFree(ReadyList * readylist);
 
-PCB * removeProcess(ReadyList * readylist, PCB * process);
 PCB * init(ReadyList * readylist);
 
 // # Resource List
