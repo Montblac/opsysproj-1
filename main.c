@@ -19,9 +19,9 @@ int main(int argc, char * argv[]){
 	} else {
 
         // Initialize System
-        ReadyList * readylist = readyInit();
-        ResourceList * resourcelist = resourceInit();
-        PCB * active_process = init(readylist);
+        ReadyList * readylist = initReadylist();
+        ResourceList * resourcelist = initResourcelist();
+        PCB * active_process = initProcess(readylist);
         printf("\t*Process %s is running\n", getProcessName(active_process));
 
 
@@ -35,11 +35,12 @@ int main(int argc, char * argv[]){
                 printf("\tPlease include a command.\n");
 
             } else if(!strcmp(command, "init")) {
-                readyFree(readylist);
-                resourceFree(resourcelist);
-                readylist = readyInit();
-                resourcelist = resourceInit();
-                active_process = init(readylist);
+                freeWaitlist(resourcelist);
+                freeResourcelist(resourcelist);
+                freeReadylist(readylist);
+                readylist = initReadylist();
+                resourcelist = initResourcelist();
+                active_process = initProcess(readylist);
 
             } else if (!strcmp(command, "cr")) {
                 char * temp = strtok(NULL, " \n");
@@ -77,12 +78,22 @@ int main(int argc, char * argv[]){
                 char * units = isNumber(temp) ? strdup(temp) : NULL;
                 int value = units != NULL ? (int)strtol(units, NULL, 10) : -1;
 
-                if(rid && units && strtok(NULL, "\n") == NULL && isInRange2(value)){
+                if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)){
                     request(rid, value, resourcelist, readylist, &active_process);
                 }
 
 
             } else if (!strcmp(command, "rel")) {
+                char * temp = strtok(NULL, " \n");
+                char * rid = strdup(temp);
+
+                temp = strtok(NULL, " \n");
+                char * units = isNumber(temp) ? strdup(temp) : NULL;
+                int value = units != NULL ? (int)strtol(units, NULL, 10) : -1;
+
+                if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)){
+                    release(rid, value, resourcelist, readylist, &active_process);
+                }
                 printf("\tReceived 'rel' command.\n");
 
             } else if (!strcmp(command, "to")) {
@@ -101,6 +112,11 @@ int main(int argc, char * argv[]){
                 char * name = strdup(strtok(NULL, "\n"));
                 printTree(name, readylist);
 
+            } else if (!strcmp(command, "showWaitlist")) {
+                // For Debugging Purposes
+                char * rid = strdup(strtok(NULL, "\n"));
+                printWaitlist(rid, resourcelist);
+
             } else {
                 printf("\tInvalid command; please try again.\n");
             }
@@ -109,8 +125,8 @@ int main(int argc, char * argv[]){
 		}
 
         // Freeing Resources
-        readyFree(readylist);
-        resourceFree(resourcelist);
+        freeReadylist(readylist);
+        freeResourcelist(resourcelist);
 	}
 
 }

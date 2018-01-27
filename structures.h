@@ -27,13 +27,12 @@ typedef struct PCB {
     char * pid;	                // Process Name
     int state;                  // State
     int priority;               // Priority
+    int requested;              // Resource Amount Requested
 
-    ResourceNode * resources;	    // Linked List of Resources
-    struct PCB * parent;	        // Parent
-    ProcessNode * child;    	    // Linked List of Children
-    //ResourceList * resourcelist;    // Pointer to resourcelist
-    //ReadyList * readylist;          // Pointer to readylist
-    ProcessNode * list;
+    ResourceNode * resources;	// Linked List of Resources
+    struct PCB * parent;	    // Parent
+    ProcessNode * child;    	// Linked List of Children
+    ProcessNode * list;         // Back-pointer to readylist or waitlist
 } PCB;
 
 typedef struct RCB {
