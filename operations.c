@@ -338,7 +338,7 @@ void create (const char * name, int priority, ReadyList * readylist, PCB ** acti
     PCB * new_process = createProcess(name, priority, *active_process);
     insertChild(*active_process, new_process);
     insertProcess(readylist, new_process);
-    setProcessState(*active_process, READY);
+    setProcessState(new_process, READY);
     scheduler(active_process, readylist);
 }
 
@@ -431,7 +431,7 @@ int updateParent(PCB * src){
     prev->next = head->next;
     return 1;
 }
-int delete(const char * pid, ReadyList * readylist, PCB ** active_proc){
+int delete(const char * pid, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_proc){
     ProcessNode ** prioritylist = readylist->priorities;
     for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
         ProcessNode ** pnode = &prioritylist[i];
@@ -445,13 +445,17 @@ int delete(const char * pid, ReadyList * readylist, PCB ** active_proc){
                 }
                 killTree(proc, readylist);
 
-                ResourceNode * rnode = proc->resources;
-                RCB * resource;
-                if(rnode != NULL){
-                    resource = rnode->resource;
-                    removeWaitlisted(resource, getProcessName(proc));
+                for(int j = 0; j < NUM_OF_RESOURCES; ++j){
+                    RCB ** resource = &resourcelist->resources[j];
+                    removeWaitlisted(*resource, getProcessName(proc));
                 }
 
+                ResourceNode * rnode = proc->resources;
+                while(rnode != NULL){
+                    RCB * resource = rnode->resource;
+                    removeResource(proc, resource, 1);
+                    rnode = rnode->next;
+                }
 
                 updateParent(proc);
                 killProcess(readylist, pid);
@@ -465,7 +469,7 @@ int delete(const char * pid, ReadyList * readylist, PCB ** active_proc){
 }
 
 // ## Request
-void request(const char * rid, int units, ResourceList * resourcelist, ReadyList * readylist, PCB ** active_process){
+void request(const char * rid, int units, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process){
     RCB * resource = findResource(rid, resourcelist);
     if(resource != NULL) {
         if(units > getResourceSize(resource)){
@@ -473,6 +477,7 @@ void request(const char * rid, int units, ResourceList * resourcelist, ReadyList
         }
         else if (units <= getResourceSpace(resource)) {
             resource->inventory -= units;
+            setProcessRequested(*active_process, units);
             insertResource(*active_process, resource, units);
             printf("\tAdded resource %s to process %s.\n", rid, getProcessName(*active_process));
         } else {
@@ -542,6 +547,12 @@ int isInRange(int num){
 }
 int isInRange2(int num){
     return num >= 1 && num <= 4;
+}
+
+// # I/O
+void writeoutput(const char * pid, FILE * file){
+    fputs(pid, file);
+    fputs(" ", file);
 }
 
 // # Debugging

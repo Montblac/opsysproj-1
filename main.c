@@ -7,14 +7,17 @@
 
 
 int main(int argc, char * argv[]){
-    // Checks for input and output files
     FILE * infile, * outfile;
-    infile = (argc > 1) ? fopen(argv[1], "r") : fopen("input.txt", "r");
-    outfile = (argc > 2) ? fopen(argv[2], "w") : fopen("output.txt", "r");
 
+    // Comment out for file redirection in Linux host
+    //infile = (argc > 1) ? fopen(argv[1], "r") : fopen("input.txt", "r");
+    //outfile = (argc > 2) ? fopen(argv[2], "w") : fopen("output.txt", "r");
 
-	if(infile){
-		printf("Processing file...\n");
+    infile = fopen("test.txt", "r");
+    outfile = fopen("54565096.txt", "w+");
+
+	if(!infile){
+		printf("Please include a file...\n");
 
 	} else {
 
@@ -22,17 +25,22 @@ int main(int argc, char * argv[]){
         ReadyList * readylist = initReadylist();
         ResourceList * resourcelist = initResourcelist();
         PCB * active_process = initProcess(readylist);
-        printf("\t*Process %s is running\n", getProcessName(active_process));
+        writeoutput(getProcessName(active_process), outfile);
 
+        printf("\t*Process %s is running\n", getProcessName(active_process));
 
         // Initialize Shell
 		size_t size; ssize_t input_size; char * input = NULL;
         printf("shell >> ");
-        while((input_size = getline(&input, &size, stdin) ) != EOF ){
+
+        // Comment out for user input
+        //while((input_size = getline(&input, &size, stdin) ) != EOF ){
+        while((input_size = getline(&input, &size, infile)) != EOF) {
             char * command = strtok(input, " \n");
 
             if(command == NULL){
                 printf("\tPlease include a command.\n");
+                fputs("\n", outfile);
 
             } else if(!strcmp(command, "init")) {
                 freeWaitlist(resourcelist);
@@ -41,6 +49,7 @@ int main(int argc, char * argv[]){
                 readylist = initReadylist();
                 resourcelist = initResourcelist();
                 active_process = initProcess(readylist);
+                writeoutput(getProcessName(active_process), outfile);
 
             } else if (!strcmp(command, "cr")) {
                 char * temp = strtok(NULL, " \n");
@@ -52,9 +61,11 @@ int main(int argc, char * argv[]){
 
                 if(name && priority && strtok(NULL, " \n") == NULL && isInRange(pval) ){
                     create(name, pval, readylist, &active_process);
+                    writeoutput(getProcessName(active_process), outfile);
                 }
                 else {
                     printf("\tInvalid command; please try again.\n");
+                    writeoutput("error", outfile);
                 }
 
             } else if (!strcmp(command, "de")) {
@@ -63,10 +74,15 @@ int main(int argc, char * argv[]){
 
                 if(!pid || strtok(NULL, " \n")){
                     printf("\tInvalid command; please try again.\n");
+                    writeoutput("error", outfile);
                 } else if (!strcmp(pid, "init")){
                     printf("\tCannot delete %s process.\n", pid);
-                } else if (!delete(pid, readylist, &active_process)){
+                    writeoutput("error", outfile);
+                } else if (!delete(pid, readylist, resourcelist, &active_process)){
                     printf("\tProcess %s does not exist.\n", pid);
+                    writeoutput("error", outfile);
+                } else {
+                    writeoutput(getProcessName(active_process), outfile);
                 }
 
 
@@ -79,7 +95,10 @@ int main(int argc, char * argv[]){
                 int value = units != NULL ? (int)strtol(units, NULL, 10) : -1;
 
                 if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)){
-                    request(rid, value, resourcelist, readylist, &active_process);
+                    request(rid, value, readylist, resourcelist, &active_process);
+                    writeoutput(getProcessName(active_process), outfile);
+                } else {
+                    writeoutput("error", outfile);
                 }
 
 
@@ -93,11 +112,14 @@ int main(int argc, char * argv[]){
 
                 if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)){
                     release(rid, value, resourcelist, readylist, &active_process);
+                    writeoutput(getProcessName(active_process), outfile);
+                } else {
+                    writeoutput("error", outfile);
                 }
-                printf("\tReceived 'rel' command.\n");
 
             } else if (!strcmp(command, "to")) {
                 timeout(readylist, &active_process);
+                writeoutput(getProcessName(active_process), outfile);
 
             } else if (!strcmp(command, "exit")) {
                 printf("\tExiting session...\n");
@@ -127,6 +149,8 @@ int main(int argc, char * argv[]){
         // Freeing Resources
         freeReadylist(readylist);
         freeResourcelist(resourcelist);
+        fclose(infile);
+        fclose(outfile);
 	}
 
 }

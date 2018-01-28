@@ -68,10 +68,10 @@ void killProcess(ReadyList * readylist, const char * pid);
 void killChild(ProcessNode ** pnode, const char * pid);
 void killTree(PCB * src, ReadyList * readylist);
 int updateParent(PCB * src);
-int delete(const char * pid, ReadyList * readylist, PCB ** active_process);
+int delete(const char * pid, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
 
 // ## Request
-void request(const char * rid, int units, ResourceList * resourcelist, ReadyList * readylist, PCB ** active_process);
+void request(const char * rid, int units, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
 
 // ## Release
 void release(const char * rid, int units, ResourceList * resourcelist, ReadyList * readylist, PCB ** active_process);
@@ -81,6 +81,9 @@ int isWord(const char * input);
 int isNumber(const char * input);
 int isInRange(int num);
 int isInRange2(int num);
+
+// # I/O
+void writeoutput(const char * pid, FILE * file);
 
 // # Debugging
 void printReadyList(ReadyList * readylist);
