@@ -34,9 +34,9 @@ int main(int argc, char * argv[]){
         printf("shell >> ");
 
         // Comment out for user input
-        //while((input_size = getline(&input, &size, stdin) ) != EOF ){
-        while((input_size = getline(&input, &size, infile)) != EOF) {
-            char * command = strtok(input, " \n");
+        // while((input_size = getline(&input, &size, stdin) ) != EOF ){	
+		while((input_size = getline(&input, &size, infile)) != EOF) {
+			char * command = strtok(input, " \n");
 
             if(command == NULL){
                 printf("\tPlease include a command.\n");
@@ -67,6 +67,8 @@ int main(int argc, char * argv[]){
                     printf("\tInvalid command; please try again.\n");
                     writeoutput("error", outfile);
                 }
+				if(name){free(name);}
+				if(priority){free(priority);}
 
             } else if (!strcmp(command, "de")) {
                 char * temp = (strtok(NULL, " \n"));
@@ -84,6 +86,7 @@ int main(int argc, char * argv[]){
                 } else {
                     writeoutput(getProcessName(active_process), outfile);
                 }
+				if(pid){free(pid);};
 
 
             } else if (!strcmp(command, "req")) {
@@ -100,7 +103,8 @@ int main(int argc, char * argv[]){
                 } else {
                     writeoutput("error", outfile);
                 }
-
+				if(rid){free(rid);}
+				if(units){free(units);}
 
             } else if (!strcmp(command, "rel")) {
                 char * temp = strtok(NULL, " \n");
@@ -116,6 +120,8 @@ int main(int argc, char * argv[]){
                 } else {
                     writeoutput("error", outfile);
                 }
+				if(rid){free(rid);}
+				if(units){free(rid);}
 
             } else if (!strcmp(command, "to")) {
                 timeout(readylist, &active_process);
@@ -133,20 +139,26 @@ int main(int argc, char * argv[]){
                 // For Debugging Purposes
                 char * name = strdup(strtok(NULL, "\n"));
                 printTree(name, readylist);
+				if(name){free(name);}
 
             } else if (!strcmp(command, "showWaitlist")) {
                 // For Debugging Purposes
                 char * rid = strdup(strtok(NULL, "\n"));
                 printWaitlist(rid, resourcelist);
+				if(rid){free(rid);}
 
             } else {
                 printf("\tInvalid command; please try again.\n");
             }
             printf("\t*Process %s is running\n", getProcessName(active_process));
             printf("shell >> ");
+
+				
 		}
 
+
         // Freeing Resources
+		free(input);
         freeReadylist(readylist);
         freeResourcelist(resourcelist);
         fclose(infile);

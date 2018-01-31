@@ -12,6 +12,8 @@ PCB * createProcess(const char * pid, int priority, PCB * parent);
 RCB * createResource(const char * name, int resource_count);
 
 // # De-allocation
+void freeProcessNodes(ProcessNode * head);
+void freeResourceNodes(ResourceNode * head);
 void freeReadylist(ReadyList * readylist);
 void freeResourcelist(ResourceList * resourcelist);
 void freeWaitlist(ResourceList * resourcelist);

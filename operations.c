@@ -40,40 +40,63 @@ RCB * createResource(const char * name, int resource_count){
 }
 
 // # De-allocation
+void freeProcessNodes(ProcessNode * head){
+	ProcessNode * temp = head;
+	while(head != NULL){
+		head = head->next;
+		free(temp);
+		temp = head;
+	}
+}
+void freeResourceNodes(ResourceNode * head){
+	ResourceNode * temp = head;
+	while(head != NULL){
+		head = head->next;
+		free(temp);
+		temp = head;
+	}
+}
 void freeReadylist(ReadyList * readylist){
+	for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
+		ProcessNode * head = readylist->priorities[i];
+		ProcessNode * temp = head;
+		while(temp != NULL){
+			PCB * process = temp->process;
+			freeProcessNodes(process->child);
+			freeResourceNodes(process->resources);
+			free(process->pid);
+			free(process);
+			temp = temp->next;
+		}
+		freeProcessNodes(head);
+	}
+	free(readylist);
+	/*
     ProcessNode ** prioritylist = readylist->priorities;
     for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
         ProcessNode * node = prioritylist[i];
+		ProcessNode * head = node;
         while(node != NULL){
             ProcessNode * temp = node;
             node = node->next;
             PCB * proc = temp->process;
 
-            ProcessNode * child = proc->child;
-            while(child != NULL){
-                ProcessNode * ptemp = child;
-                child = child->next;
-                free(ptemp);
-            }
-
-            ResourceNode * resource = proc->resources;
-            while(resource != NULL){
-                ResourceNode * ptemp = resource;
-                resource = resource->next;
-                free(ptemp);
-            }
-
+			freeProcessNodes(proc->child);
+			freeResourceNodes(proc->resources);	
+			free(proc->pid);
             free(temp->process);
-            free(temp);
         }
+		freeProcessNodes(head);
     }
     free(readylist);
+	*/
 }
 void freeResourcelist(ResourceList * resourcelist){
     RCB ** resources = resourcelist->resources;
     for(int i = 0; i < NUM_OF_RESOURCES; ++i){
         RCB * resource = resources[i];
-        free(resource);
+        free(resource->rid);
+		free(resource);
     }
     free(resourcelist);
 }
@@ -89,6 +112,7 @@ void freeWaitlist(ResourceList * resourcelist){
         }
     }
 }
+
 
 // # Process Control Block (PCB) Mutator / Accessor
 char * getProcessName(PCB * process){
