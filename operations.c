@@ -62,7 +62,6 @@ void freeProcess(PCB * proc){
 	free(proc->pid);
 	free(proc);
 }
-
 void freeReadylist(ReadyList * readylist){
 	for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
 		ProcessNode * head = readylist->priorities[i];
@@ -425,8 +424,7 @@ void request(const char * rid, int units, ReadyList * readylist, ResourceList * 
             setProcessRequested(*active_process, units);
             insertResource(*active_process, resource, units);
             printf("\tAdded resource %s to process %s.\n", rid, getProcessName(*active_process));
-        }
-		else {
+        } else {
             setProcessState(*active_process, BLOCKED);
             setProcessRequested(*active_process, units);
 			setProcessList(*active_process, getResourceWaitlist(resource));

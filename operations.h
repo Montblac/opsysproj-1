@@ -14,6 +14,7 @@ RCB * createResource(const char * name, int resource_count);
 // # De-allocation
 void freeProcessNodes(ProcessNode * head);
 void freeResourceNodes(ResourceNode * head);
+void freeProcess(PCB * proc);
 void freeReadylist(ReadyList * readylist);
 void freeResourcelist(ResourceList * resourcelist);
 void freeWaitlist(ResourceList * resourcelist);
@@ -23,6 +24,7 @@ char * getProcessName(PCB * process);
 int getProcessState(PCB * process);
 int getProcessPriority(PCB * process);
 void setProcessState(PCB * process, int state);
+void setProcessList(PCB * process, ProcessNode * list);
 void setProcessRequested(PCB * process, int amount);
 
 // # Resource Control Block (RCB)
