@@ -28,6 +28,7 @@ PCB * createProcess(const char * pid, int priority, PCB * parent){
     process->pid = strdup(pid);
     process->priority = priority;
     process->parent = parent;
+    process->requested = 0;
     return process;
 }
 RCB * createResource(const char * name, int resource_count){
@@ -306,7 +307,7 @@ void removeWaitlisted(RCB * resource, const char * pid){
     }
 }
 
-// Update
+// # Update
 int updateParent(PCB * src){
     PCB * parent = src->parent;
     ProcessNode ** child = &(parent->child);
