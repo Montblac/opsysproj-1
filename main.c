@@ -160,6 +160,7 @@ int main(int argc, char * argv[]){
         // Freeing Resources
 		free(input);
         freeReadylist(readylist);
+		freeWaitlist(resourcelist);
         freeResourcelist(resourcelist);
         fclose(infile);
         fclose(outfile);

@@ -56,46 +56,36 @@ void freeResourceNodes(ResourceNode * head){
 		temp = head;
 	}
 }
+void freeProcess(PCB * proc){
+	freeProcessNodes(proc->child);
+	freeResourceNodes(proc->resources);
+	free(proc->pid);
+	free(proc);
+}
+
 void freeReadylist(ReadyList * readylist){
 	for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
 		ProcessNode * head = readylist->priorities[i];
 		ProcessNode * temp = head;
 		while(temp != NULL){
 			PCB * process = temp->process;
-			freeProcessNodes(process->child);
-			freeResourceNodes(process->resources);
-			free(process->pid);
-			free(process);
+			//freeProcessNodes(process->child);
+			//freeResourceNodes(process->resources);
+			//free(process->pid);
+			//free(process);
+			freeProcess(process);
 			temp = temp->next;
 		}
 		freeProcessNodes(head);
 	}
 	free(readylist);
-	/*
-    ProcessNode ** prioritylist = readylist->priorities;
-    for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
-        ProcessNode * node = prioritylist[i];
-		ProcessNode * head = node;
-        while(node != NULL){
-            ProcessNode * temp = node;
-            node = node->next;
-            PCB * proc = temp->process;
-
-			freeProcessNodes(proc->child);
-			freeResourceNodes(proc->resources);	
-			free(proc->pid);
-            free(temp->process);
-        }
-		freeProcessNodes(head);
-    }
-    free(readylist);
-	*/
 }
 void freeResourcelist(ResourceList * resourcelist){
     RCB ** resources = resourcelist->resources;
     for(int i = 0; i < NUM_OF_RESOURCES; ++i){
         RCB * resource = resources[i];
         free(resource->rid);
+		freeProcessNodes(resource->waitinglist);
 		free(resource);
     }
     free(resourcelist);
@@ -107,6 +97,7 @@ void freeWaitlist(ResourceList * resourcelist){
         ProcessNode * head = *waitlist;
         while(*waitlist != NULL){
             *waitlist = head->next;
+			freeProcess(head->process);
             free(head);
             head = *waitlist;
         }
@@ -428,18 +419,20 @@ void request(const char * rid, int units, ReadyList * readylist, ResourceList * 
         if(units > getResourceSize(resource)){
             printf("\tInvalid command; request amount larger than size.\n");
         }
+		
         else if (units <= getResourceSpace(resource)) {
             resource->inventory -= units;
             setProcessRequested(*active_process, units);
             insertResource(*active_process, resource, units);
             printf("\tAdded resource %s to process %s.\n", rid, getProcessName(*active_process));
-        } else {
+        }
+		else {
             setProcessState(*active_process, BLOCKED);
             setProcessRequested(*active_process, units);
-            setProcessList(*active_process, getResourceWaitlist(resource));
+			setProcessList(*active_process, getResourceWaitlist(resource));
             removeProcess(readylist, *active_process);
             insertWaitlist(*active_process, resource);
-            printf("\tAdded process %s to resource %s waitlist.\n", getProcessName(*active_process), rid);
+			printf("\tAdded process %s to resource %s waitlist.\n", getProcessName(*active_process), rid);
         }
         scheduler(active_process, readylist);
     }
