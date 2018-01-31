@@ -51,6 +51,10 @@ void removeProcess(ReadyList * readylist, PCB * process);
 void removeResource(PCB * process, RCB * resource, int n);
 void removeWaitlisted(RCB * resource, const char * pid);
 
+// Update
+int updateParent(PCB * src);
+void updateWaitlist(PCB * src, ReadyList * readylist);
+
 // # Initialization
 ReadyList * initReadylist();
 ResourceList * initResourcelist();
@@ -63,15 +67,11 @@ void scheduler(PCB ** active_proc, ReadyList * readylist);
 // # Time-out Interrupt
 void timeout(ReadyList * readylist, PCB ** active_process);
 
-
 // ## Create
 void create(const char * name, int priority, ReadyList * readylist, PCB ** active_process);
 
 // ## Delete
-void killProcess(ReadyList * readylist, const char * pid);
-void killChild(ProcessNode ** pnode, const char * pid);
 void killTree(PCB * src, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
-int updateParent(PCB * src);
 int delete(const char * pid, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
 
 // ## Request

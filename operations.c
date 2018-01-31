@@ -306,6 +306,58 @@ void removeWaitlisted(RCB * resource, const char * pid){
     }
 }
 
+// Update
+int updateParent(PCB * src){
+    PCB * parent = src->parent;
+    ProcessNode ** child = &(parent->child);
+    ProcessNode * head = *child;
+    ProcessNode * prev = head;
+
+    if(head != NULL &&
+       head->process != NULL &&
+       !strcmp(getProcessName(src), getProcessName(head->process))){
+        *child = head->next;
+        free(head);
+        return 1;
+    }
+    while(head != NULL &&
+          head->process != NULL &&
+          strcmp(getProcessName(src), getProcessName(head->process)) != 0){
+        prev = head;
+        head = head->next;
+    }
+    if(head == NULL){
+        return 0;
+    }
+    prev->next = head->next;
+    free(head);
+    return 1;
+}
+void updateWaitlist(PCB * src, ReadyList * readylist){
+    ResourceNode * rnode = src->resources;
+    while(rnode != NULL){
+        RCB * resource = rnode->resource;
+        removeResource(src, resource, 1);
+        ProcessNode *pnode = resource->waitinglist;
+
+        while (pnode != NULL) {
+            PCB *proc = pnode->process;
+            if (resource->inventory >= proc->requested) {
+                resource->inventory -= proc->requested;
+
+                removeWaitlisted(resource, getProcessName(proc));
+                setProcessState(proc, READY);
+                setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
+                insertResource(proc, resource, proc->requested);
+                insertProcess(readylist, proc);
+            }
+            pnode = pnode->next;
+        }
+        rnode = rnode->next;
+    }
+}
+
+
 // # Initialization
 ReadyList * initReadylist(){
     ReadyList * readylist = (ReadyList *)malloc(sizeof(ReadyList));
@@ -371,46 +423,6 @@ void create (const char * name, int priority, ReadyList * readylist, PCB ** acti
     scheduler(active_process, readylist);
 }
 
-
-/*
-int delete(const char * pid, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_proc){
-    ProcessNode ** prioritylist = readylist->priorities;
-    for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
-        ProcessNode ** pnode = &prioritylist[i];
-        ProcessNode * temp = *pnode;
-        PCB * proc;
-
-        while(temp != NULL){
-            if(!strcmp(getProcessName(proc = temp->process), pid)){
-                if(!strcmp(getProcessName(*active_proc), getProcessName(proc))){
-                    *active_proc = NULL;
-                }
-                killTree(proc, readylist, resourcelist);
-
-                for(int j = 0; j < NUM_OF_RESOURCES; ++j){
-                    RCB ** resource = &resourcelist->resources[j];
-                    removeWaitlisted(*resource, getProcessName(proc));
-                }
-
-                ResourceNode * rnode = proc->resources;
-                while(rnode != NULL){
-                    RCB * resource = rnode->resource;
-                    removeResource(proc, resource, 1);
-                    rnode = rnode->next;
-                }
-
-                updateParent(proc);
-                killProcess(readylist, pid);
-                scheduler(active_proc, readylist);
-                return 1;
-            }
-            temp = temp->next;
-        }
-    }
-    return 0;
-}
-*/
-
 // ## Request
 void request(const char * rid, int units, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process){
     RCB * resource = findResource(rid, resourcelist);
@@ -448,191 +460,39 @@ void release(const char * rid, int units, ResourceList * resourcelist, ReadyList
             PCB *proc = pnode->process;
             if (resource->inventory >= proc->requested) {
                 resource->inventory -= proc->requested;
+
+                removeWaitlisted(resource, getProcessName(proc));
+                setProcessState(proc, READY);
+                setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
+                insertResource(proc, resource, proc->requested);
+                insertProcess(readylist, proc);
             }
-            removeWaitlisted(resource, getProcessName(proc));
-            setProcessState(proc, READY);
-            setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
-            insertResource(proc, resource, units);
-            insertProcess(readylist, proc);
             pnode = pnode->next;
         }
         scheduler(active_process, readylist);
-
     }
 }
+
 // ## Delete
-int updateParent(PCB * src){
-    PCB * parent = src->parent;
-    ProcessNode ** child = &(parent->child);
-    ProcessNode * head = *child;
-    ProcessNode * prev = head;
-
-    if(head != NULL &&
-       head->process != NULL &&
-       !strcmp(getProcessName(src), getProcessName(head->process))){
-        *child = head->next;
-		free(head);
-        return 1;
-    }
-    while(head != NULL &&
-          head->process != NULL &&
-          strcmp(getProcessName(src), getProcessName(head->process)) != 0){
-        prev = head;
-        head = head->next;
-    }
-    if(head == NULL){
-        return 0;
-    }
-    prev->next = head->next;
-	free(head);
-    return 1;
-}
-void killProcess(ReadyList * readylist, const char * pid){
-	PCB * proc = findProcess(pid, readylist);
-	removeProcess(readylist, proc);
-	/*
-    for(int i = 0; i < NUM_OF_PRIORITIES; ++i){
-        ProcessNode ** priority = &readylist->priorities[i];
-        ProcessNode * head = *priority;
-        ProcessNode * prev = head;
-
-        if(head != NULL && head->process != NULL && !strcmp(pid, getProcessName(head->process))){
-            *priority = head->next;
-            free(head->process);
-            free(head);
-            break;
-        }
-
-        while(head != NULL && head->process != NULL && strcmp(pid, getProcessName(head->process)) != 0){
-            prev = head;
-            head = head->next;
-        }
-        if(head == NULL){
-            continue;
-        }
-        prev->next = head->next;
-        free(head->process);
-        free(head);
-    }
-	*/
-}
-void killWaitlisted(ResourceList * resourcelist, ReadyList * readylist, const char * pid){
-	PCB * proc = findProcess(pid, readylist);
-	for(int i = 0; i < NUM_OF_RESOURCES; ++i){
-		RCB * resource = resourcelist->resources[i];
-		removeWaitlisted(resource, pid);
-	}
-}
-void killChild(ProcessNode ** pnode, const char * pid){
-    ProcessNode * head = *pnode;
-    if(head != NULL) {
-        PCB *child = head->process;
-        if (!strcmp(child->pid, pid)) {
-            *pnode = head->next;
-            free(head);
-        } else {
-            ProcessNode * prev = head;
-            head = head->next;
-            while (head != NULL) {
-                child = head->process;
-                if (!strcmp(child->pid, pid)) {
-                    prev->next = head->next;
-                    free(head);
-                    break;
-                }
-                prev = head;
-                head = head->next;
-            }
-        }
-    }
-}
-
-/*
-void killTree(PCB * src, ReadyList * readylist){
-    ProcessNode * child = src->child;
-    while(child != NULL){
-        killTree(child->process, readylist);
-        killChild(&(src->child), getProcessName(child->process));
-
-        ResourceNode * rnode = src->resources;
-        RCB * resource;
-        while(rnode != NULL){
-            resource = rnode->resource;
-            removeResource(child->process, resource, 1); // Remove if broken
-            removeWaitlisted(resource, getProcessName(src));
-            rnode = rnode->next;
-        }
-        killProcess(readylist, getProcessName(child->process));
-        child = child->next;
-    }
-}
-*/
 void killTree(PCB * src, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process){
 	ProcessNode * child = src->child;
 	while(child != NULL){
 		killTree(child->process, readylist, resourcelist, active_process);
 	}
-	updateParent(src);
-	removeProcess(readylist, src);
-	for(int i = 0; i < NUM_OF_RESOURCES; ++i){
-		RCB * resource = resourcelist->resources[i];
-		removeWaitlisted(resource, getProcessName(src));
-	}
-	freeProcess(src);
-	
-	/*
-    ProcessNode * child = src->child;
-    while(child != NULL){
-        killTree(child->process, readylist, resourcelist, active_process);
-        killChild(&(src->child), getProcessName(child->process));
-        child = child->next;
-    }
-    ResourceNode * rnode = src->resources;
-    RCB * resource;
-    while(rnode != NULL){
-        resource = rnode->resource;
-        //removeResource(src, resource, 1);
-        rnode = rnode->next;
-        release(getResourceName(resource), 1, resourcelist, readylist, active_process);
-        //rnode = rnode->next;
-    }
-
-    for(int j = 0; j < NUM_OF_RESOURCES; ++j){
-        RCB ** res = &resourcelist->resources[j];
-        removeWaitlisted(*res, getProcessName(src));
-    }
+    updateWaitlist(src, readylist);
     updateParent(src);
-    killProcess(readylist, getProcessName(src));
-	*/
-}
-
-/*
-int delete(const char * pid, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_proc) {
-    ProcessNode ** prioritylist = readylist->priorities;
-    for(int i = 0; i < NUM_OF_PRIORITIES; ++i) {
-        ProcessNode **pnode = &prioritylist[i];
-        ProcessNode *temp = *pnode;
-        PCB *proc;
-
-        while (temp != NULL) {
-            if (!strcmp(getProcessName(proc = temp->process), pid)) {
-                if (!strcmp(getProcessName(*active_proc), getProcessName(proc))) {
-                    *active_proc = NULL;
-                }
-                killTree(proc, readylist, resourcelist, active_proc);
-                scheduler(active_proc, readylist);
-                return 1;
-            }
-            temp = temp->next;
-        }
+    removeProcess(readylist, src);
+    for(int i = 0; i < NUM_OF_RESOURCES; ++i){
+        RCB * resource = resourcelist->resources[i];
+        removeWaitlisted(resource, getProcessName(src));
     }
-    return 0;
+	freeProcess(src);
 }
-*/
+
 int delete(const char *pid, ReadyList *readylist, ResourceList *resourcelist, PCB ** active_proc){
 	PCB * proc = findProcess(pid, readylist);
 	if(proc != NULL){
-		if(!strcmp(getProcessName(proc), pid)){
+		if(!strcmp(getProcessName(*active_proc), pid)){
 			*active_proc = NULL;
 		}
 		killTree(proc, readylist, resourcelist, active_proc);
