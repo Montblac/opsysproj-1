@@ -257,6 +257,7 @@ void removeProcess(ReadyList * readylist, PCB * process){
             head->process != NULL &&
             !strcmp(pid, getProcessName(head->process))) {
             *priority = head->next;
+			free(head);
             break;
         }
         while (head != NULL &&
@@ -269,6 +270,7 @@ void removeProcess(ReadyList * readylist, PCB * process){
             continue;
         }
         prev->next = head->next;
+		free(head);
     }
 }
 void removeResource(PCB * process, RCB * resource, int n){
