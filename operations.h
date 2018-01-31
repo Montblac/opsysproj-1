@@ -37,13 +37,13 @@ PCB * findProcess2(const char * rid, ReadyList * readylist);
 RCB * findResource(const char * rid, ResourceList * resourcelist);
 
 // # Insertion
-ProcessNode * insertChild(PCB * src, PCB * new_pcb);
+void insertChild(PCB * src, PCB * new_pcb);
 void insertProcess(ReadyList * readylist, PCB * process);
 void insertResource(PCB * process, RCB * resource, int n);
 void insertWaitlist(PCB * process, RCB * resource);
 
 // # Deletion
-PCB * removeProcess(ReadyList * readylist, PCB * process);
+void removeProcess(ReadyList * readylist, PCB * process);
 void removeResource(PCB * process, RCB * resource, int n);
 void removeWaitlisted(RCB * resource, const char * pid);
 
@@ -66,7 +66,7 @@ void create(const char * name, int priority, ReadyList * readylist, PCB ** activ
 // ## Delete
 void killProcess(ReadyList * readylist, const char * pid);
 void killChild(ProcessNode ** pnode, const char * pid);
-void killTree(PCB * src, ReadyList * readylist);
+void killTree(PCB * src, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
 int updateParent(PCB * src);
 int delete(const char * pid, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
 
