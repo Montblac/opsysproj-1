@@ -47,6 +47,22 @@ void freeReadylist(ReadyList * readylist){
         while(node != NULL){
             ProcessNode * temp = node;
             node = node->next;
+            PCB * proc = temp->process;
+
+            ProcessNode * child = proc->child;
+            while(child != NULL){
+                ProcessNode * ptemp = child;
+                child = child->next;
+                free(ptemp);
+            }
+
+            ResourceNode * resource = proc->resources;
+            while(resource != NULL){
+                ResourceNode * ptemp = resource;
+                resource = resource->next;
+                free(ptemp);
+            }
+
             free(temp->process);
             free(temp);
         }
