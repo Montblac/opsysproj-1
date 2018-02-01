@@ -77,7 +77,7 @@ void killTree(PCB * src, ReadyList * readylist, ResourceList * resourcelist, PCB
 int delete(const char * pid, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
 
 // ## Request
-void request(const char * rid, int units, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
+int request(const char * rid, int units, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process);
 
 // ## Release
 void release(const char * rid, int units, ResourceList * resourcelist, ReadyList * readylist, PCB ** active_process);

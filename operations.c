@@ -9,6 +9,12 @@
 #include "macros.h"
 #include "structures.h"
 
+// # I/O
+void writeoutput(const char * pid, FILE * file){
+    fputs(pid, file);
+    fputs(" ", file);
+}
+
 
 // # Allocation
 ProcessNode * createPNode(PCB * process, ProcessNode * next){
@@ -160,6 +166,19 @@ PCB * findProcess2(const char * rid, ReadyList * readylist){
             PCB * process = pnode->process;
             ResourceNode * rnode = process->resources;
             if(rnode != NULL && !strcmp(rid, getResourceName(rnode->resource))){
+                return pnode->process;
+            }
+            pnode = pnode->next;
+        }
+    }
+    return NULL;
+}
+PCB * findProcessBlocked(const char * pid, ResourceList * resourcelist){
+    for(int i = 0; i < NUM_OF_RESOURCES; ++i){
+        RCB * rnode = resourcelist->resources[i];
+        ProcessNode * pnode = rnode->waitinglist;
+        while(pnode != NULL){
+            if(!strcmp(pid, getProcessName(pnode->process))){
                 return pnode->process;
             }
             pnode = pnode->next;
@@ -440,28 +459,30 @@ void create (const char * name, int priority, ReadyList * readylist, PCB ** acti
 }
 
 // ## Request
-void request(const char * rid, int units, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process){
+int request(const char * rid, int units, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process){
     RCB * resource = findResource(rid, resourcelist);
     if(resource != NULL) {
         if(units > getResourceSize(resource)){
-            printf("\tInvalid command; request amount larger than size.\n");
+            return 0;
+            //printf("\tInvalid command; request amount larger than size.\n");
         }
 		
         else if (units <= getResourceSpace(resource)) {
             resource->inventory -= units;
             setProcessRequested(*active_process, units);
             insertResource(*active_process, resource, units);
-            printf("\tAdded resource %s to process %s.\n", rid, getProcessName(*active_process));
+            //printf("\tAdded resource %s to process %s.\n", rid, getProcessName(*active_process));
         } else {
             setProcessState(*active_process, BLOCKED);
             setProcessRequested(*active_process, units);
 			setProcessList(*active_process, getResourceWaitlist(resource));
             removeProcess(readylist, *active_process);
             insertWaitlist(*active_process, resource);
-			printf("\tAdded process %s to resource %s waitlist.\n", getProcessName(*active_process), rid);
+			//printf("\tAdded process %s to resource %s waitlist.\n", getProcessName(*active_process), rid);
         }
         scheduler(active_process, readylist);
     }
+    return 1;
 }
 
 // ## Release
@@ -513,6 +534,10 @@ void killTree(PCB * src, ReadyList * readylist, ResourceList * resourcelist, PCB
 }
 int delete(const char *pid, ReadyList *readylist, ResourceList *resourcelist, PCB ** active_proc){
 	PCB * proc = findProcess(pid, readylist);
+    if(proc == NULL){
+        proc = findProcessBlocked(pid, resourcelist);
+    }
+
 	if(proc != NULL){
 		if(!strcmp(getProcessName(*active_proc), pid)){
 			*active_proc = NULL;
@@ -561,11 +586,6 @@ int isInRange2(int num){
     return num >= 1 && num <= 4;
 }
 
-// # I/O
-void writeoutput(const char * pid, FILE * file){
-    fputs(pid, file);
-    fputs(" ", file);
-}
 
 // # Debugging
 void printReadyList(ReadyList * readylist){

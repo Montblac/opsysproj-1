@@ -27,11 +27,11 @@ int main(int argc, char * argv[]){
         PCB * active_process = initProcess(readylist);
         writeoutput(getProcessName(active_process), outfile);
 
-        printf("\t*Process %s is running\n", getProcessName(active_process));
+        //printf("\t*Process %s is running\n", getProcessName(active_process));
 
         // Initialize Shell
 		size_t size; ssize_t input_size; char * input = NULL;
-        printf("shell >> ");
+        //printf("shell >> ");
 
         // Comment out for user input
         // while((input_size = getline(&input, &size, stdin) ) != EOF ){	
@@ -39,13 +39,13 @@ int main(int argc, char * argv[]){
 			char * command = strtok(input, " \n");
 
             if(command == NULL){
-                printf("\tPlease include a command.\n");
+                //printf("\tPlease include a command.\n");
                 fputs("\n", outfile);
 
             } else if(!strcmp(command, "init")) {
+                freeReadylist(readylist);
                 freeWaitlist(resourcelist);
                 freeResourcelist(resourcelist);
-                freeReadylist(readylist);
                 readylist = initReadylist();
                 resourcelist = initResourcelist();
                 active_process = initProcess(readylist);
@@ -64,7 +64,7 @@ int main(int argc, char * argv[]){
                     writeoutput(getProcessName(active_process), outfile);
                 }
                 else {
-                    printf("\tInvalid command; please try again.\n");
+                    //printf("\tInvalid command; please try again.\n");
                     writeoutput("error", outfile);
                 }
 				if(name){free(name);}
@@ -75,13 +75,13 @@ int main(int argc, char * argv[]){
                 char * pid = isWord(temp) ? strdup(temp) : NULL;
 
                 if(!pid || strtok(NULL, " \n")){
-                    printf("\tInvalid command; please try again.\n");
+                    //printf("\tInvalid command; please try again.\n");
                     writeoutput("error", outfile);
                 } else if (!strcmp(pid, "init")){
-                    printf("\tCannot delete %s process.\n", pid);
+                    //printf("\tCannot delete %s process.\n", pid);
                     writeoutput("error", outfile);
                 } else if (!delete(pid, readylist, resourcelist, &active_process)){
-                    printf("\tProcess %s does not exist.\n", pid);
+                    //printf("\tProcess %s does not exist.\n", pid);
                     writeoutput("error", outfile);
                 } else {
                     writeoutput(getProcessName(active_process), outfile);
@@ -98,8 +98,12 @@ int main(int argc, char * argv[]){
                 int value = units != NULL ? (int)strtol(units, NULL, 10) : -1;
 
                 if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)){
-                    request(rid, value, readylist, resourcelist, &active_process);
-                    writeoutput(getProcessName(active_process), outfile);
+                    int n = request(rid, value, readylist, resourcelist, &active_process);
+                    if(n == 0){
+                        writeoutput("error", outfile);
+                    } else {
+                        writeoutput(getProcessName(active_process), outfile);
+                    }
                 } else {
                     writeoutput("error", outfile);
                 }
@@ -128,13 +132,12 @@ int main(int argc, char * argv[]){
                 writeoutput(getProcessName(active_process), outfile);
 
             } else if (!strcmp(command, "exit")) {
-                printf("\tExiting session...\n");
+                //printf("\tExiting session...\n");
                 break;
 
             } else if (!strcmp(command, "showProcesses")) {
                 // For Debugging Purposes
                 printReadyList(readylist);
-                printResources("x", readylist);
 
             } else if (!strcmp(command, "showTree")) {
                 // For Debugging Purposes
@@ -144,15 +147,20 @@ int main(int argc, char * argv[]){
 
             } else if (!strcmp(command, "showWaitlist")) {
                 // For Debugging Purposes
-                char * rid = strdup(strtok(NULL, "\n"));
+                char *rid = strdup(strtok(NULL, "\n"));
                 printWaitlist(rid, resourcelist);
-				if(rid){free(rid);}
+                if (rid) { free(rid); }
+
+            } else if(!strcmp(command, "showResources")){
+                char * pid = strdup(strtok(NULL, "\n"));
+                printResources(pid, readylist);
+                if(pid){free(pid);}
 
             } else {
-                printf("\tInvalid command; please try again.\n");
+                //printf("\tInvalid command; please try again.\n");
             }
-            printf("\t*Process %s is running\n", getProcessName(active_process));
-            printf("shell >> ");
+            //printf("\t*Process %s is running\n", getProcessName(active_process));
+            //printf("shell >> ");
 
 				
 		}
