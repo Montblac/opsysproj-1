@@ -54,7 +54,8 @@ void removeWaitlisted(RCB * resource, const char * pid);
 
 // Update
 int updateParent(PCB * src);
-void updateWaitlist(PCB * src, ReadyList * readylist);
+void updateResources(PCB * src, ReadyList * readylist);
+void updateWaitlist(RCB * resource, ReadyList * readylist);
 
 // # Initialization
 ReadyList * initReadylist();

@@ -368,6 +368,34 @@ int updateParent(PCB * src){
     free(head);
     return 1;
 }
+void updateResources(PCB * src, ReadyList * readylist){
+    ResourceNode * rnode = src->resources;
+    while(rnode != NULL){
+        RCB * resource = rnode->resource;
+        ++(resource->inventory);
+        rnode = rnode->next;
+    }
+    freeResourceNodes(src->resources);
+    src->resources = NULL;
+}
+void updateWaitlist(RCB * resource, ReadyList * readylist){
+    ProcessNode * pnode = resource->waitinglist;
+    while(pnode != NULL){
+        PCB * proc = pnode->process;
+        if(resource->inventory >= proc->requested){
+            resource->inventory -= proc->requested;
+
+            removeWaitlisted(resource, getProcessName(proc));
+            setProcessState(proc, READY);
+            setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
+            insertResource(proc, resource, proc->requested);
+            insertProcess(readylist, proc);
+        }
+        pnode = pnode->next;
+    }
+}
+
+/*
 void updateWaitlist(PCB * src, ReadyList * readylist){
     ResourceNode * rnode = src->resources;
     while(rnode != NULL){
@@ -392,6 +420,7 @@ void updateWaitlist(PCB * src, ReadyList * readylist){
         rnode = rnode->next;
     }
 }
+*/
 /*
 void updateWaitlist(PCB * src, ReadyList * readylist){
 
@@ -548,11 +577,13 @@ void killTree(PCB * src, ReadyList * readylist, ResourceList * resourcelist, PCB
 	while(child != NULL){
 		killTree(child->process, readylist, resourcelist, active_process);
 	}
-    updateWaitlist(src, readylist);
+    //updateWaitlist(src, readylist);
+    updateResources(src, readylist);
     updateParent(src);
     removeProcess(readylist, src);
     for(int i = 0; i < NUM_OF_RESOURCES; ++i){
         RCB * resource = resourcelist->resources[i];
+        updateWaitlist(resource, readylist);
         removeWaitlisted(resource, getProcessName(src));
     }
 	freeProcess(src);
