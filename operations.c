@@ -586,7 +586,6 @@ int isInRange2(int num){
     return num >= 1 && num <= 4;
 }
 
-
 // # Debugging
 void printReadyList(ReadyList * readylist){
     // Prints every process in the ready list
