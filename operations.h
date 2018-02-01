@@ -48,7 +48,8 @@ void insertWaitlist(PCB * process, RCB * resource);
 
 // # Deletion
 void removeProcess(ReadyList * readylist, PCB * process);
-void removeResource(PCB * process, RCB * resource, int n);
+void removeResource(PCB * process, RCB * resource);
+void removeNResource(PCB * process, RCB * resource, int n);
 void removeWaitlisted(RCB * resource, const char * pid);
 
 // Update
