@@ -369,6 +369,33 @@ int updateParent(PCB * src){
     return 1;
 }
 void updateWaitlist(PCB * src, ReadyList * readylist){
+    ResourceNode * rnode = src->resources;
+    while(rnode != NULL){
+        RCB * resource = rnode->resource;
+        ++(resource->inventory);
+        src->resources = rnode->next;
+
+        ProcessNode * pnode = resource->waitinglist;
+        while(pnode != NULL){
+            PCB * proc = pnode->process;
+            if(resource->inventory >= proc->requested){
+                resource->inventory -= proc->requested;
+
+                removeWaitlisted(resource, getProcessName(proc));
+                setProcessState(proc, READY);
+                setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
+                insertResource(proc, resource, proc->requested);
+                insertProcess(readylist, proc);
+            }
+            pnode = pnode->next;
+        }
+        rnode = rnode->next;
+    }
+}
+/*
+void updateWaitlist(PCB * src, ReadyList * readylist){
+
+
     while(src->resources != NULL){
 		ResourceNode * rnode = src->resources;
 		RCB * resource = rnode->resource;
@@ -390,6 +417,7 @@ void updateWaitlist(PCB * src, ReadyList * readylist){
         }
     }
 }
+ */
 
 
 // # Initialization
