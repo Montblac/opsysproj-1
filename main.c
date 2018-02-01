@@ -121,7 +121,7 @@ int main(int argc, char * argv[]){
                     writeoutput("error", outfile);
                 }
 				if(rid){free(rid);}
-				if(units){free(rid);}
+				if(units){free(units);}
 
             } else if (!strcmp(command, "to")) {
                 timeout(readylist, &active_process);

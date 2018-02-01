@@ -372,28 +372,60 @@ void updateResources(PCB * src, ReadyList * readylist){
     ResourceNode * rnode = src->resources;
     while(rnode != NULL){
         RCB * resource = rnode->resource;
-        ++(resource->inventory);
+        resource->inventory += 1;
         rnode = rnode->next;
     }
-    freeResourceNodes(src->resources);
-    src->resources = NULL;
+    //freeResourceNodes(src->resources);
+    //src->resources = NULL;
+	/*
+	rnode = src->resources;
+	while(rnode != NULL){
+		ResourceNode * temp = rnode;
+		rnode = rnode->next;
+		free(temp);
+	}
+	*/
 }
+
+/*
 void updateWaitlist(RCB * resource, ReadyList * readylist){
     ProcessNode * pnode = resource->waitinglist;
-    while(pnode != NULL){
-        PCB * proc = pnode->process;
-        if(resource->inventory >= proc->requested){
-            resource->inventory -= proc->requested;
+	PCB * proc = NULL;
+	if(pnode != NULL){ proc = pnode->process;}
 
-            removeWaitlisted(resource, getProcessName(proc));
-            setProcessState(proc, READY);
-            setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
-            insertResource(proc, resource, proc->requested);
-            insertProcess(readylist, proc);
-        }
-        pnode = pnode->next;
+		
+    while(pnode != NULL && resource->inventory >= proc->requested){
+		resource->inventory -= proc->requested;
+		//pnode = pnode->next;
+			
+		//removeWaitlisted(resource, getProcessName(proc)); 
+		resource->waitinglist = pnode->next;
+		free(pnode);
+		pnode = resource->waitinglist;
+		setProcessState(proc, READY);
+		setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
+		insertResource(proc, resource, proc->requested);
+		insertProcess(readylist, proc);
+		
+		if(pnode != NULL){proc = pnode->process;}
     }
 }
+*/
+
+void updateWaitlist(RCB * resource, ReadyList * readylist){
+	ProcessNode * pnode = resource->waitinglist;
+	PCB * proc = NULL;
+	if(pnode != NULL && resource->inventory >= (proc = pnode->process)->requested){
+		resource->inventory -= proc->requested;
+		resource->waitinglist = pnode->next;
+		free(pnode);
+		setProcessState(proc, READY);
+		setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
+		insertResource(proc, resource, proc->requested);
+		insertProcess(readylist, proc);
+	}
+}
+
 
 /*
 void updateWaitlist(PCB * src, ReadyList * readylist){
@@ -548,24 +580,24 @@ void request(const char * rid, int units, ReadyList * readylist, ResourceList * 
 
 // ## Release
 void release(const char * rid, int units, ResourceList * resourcelist, ReadyList * readylist, PCB ** active_process){
-    RCB * resource = findResource(rid, resourcelist);
+	RCB * resource = findResource(rid, resourcelist);
     PCB * process = findProcess2(rid, readylist);
-    if(process != NULL) {
+    if(resource != NULL && process != NULL) {
         removeNResource(process, resource, units);
-        ProcessNode *pnode = resource->waitinglist;
+        ProcessNode * pnode = resource->waitinglist;
+		PCB * proc = pnode->process;
 
-        while (pnode != NULL) {
-            PCB *proc = pnode->process;
-            if (resource->inventory >= proc->requested) {
-                resource->inventory -= proc->requested;
+        while (pnode != NULL && resource->inventory >= proc->requested) {
+			resource->inventory -= proc->requested;
+			pnode = pnode->next;
 
-                removeWaitlisted(resource, getProcessName(proc));
-                setProcessState(proc, READY);
-                setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
-                insertResource(proc, resource, proc->requested);
-                insertProcess(readylist, proc);
-            }
-            pnode = pnode->next;
+            removeWaitlisted(resource, getProcessName(proc));
+            setProcessState(proc, READY);
+            setProcessList(proc, readylist->priorities[getProcessPriority(proc)]);
+            insertResource(proc, resource, proc->requested);
+            insertProcess(readylist, proc);
+            
+			if(pnode != NULL){proc = pnode->process;}
         }
         scheduler(active_process, readylist);
     }
@@ -575,18 +607,24 @@ void release(const char * rid, int units, ResourceList * resourcelist, ReadyList
 void killTree(PCB * src, ReadyList * readylist, ResourceList * resourcelist, PCB ** active_process){
 	ProcessNode * child = src->child;
 	while(child != NULL){
+		child = child->next;
 		killTree(child->process, readylist, resourcelist, active_process);
 	}
-    //updateWaitlist(src, readylist);
     updateResources(src, readylist);
-    updateParent(src);
-    removeProcess(readylist, src);
-    for(int i = 0; i < NUM_OF_RESOURCES; ++i){
+   	updateParent(src);
+    
+	removeProcess(readylist, src);
+    
+	
+	for(int i = 0; i < NUM_OF_RESOURCES; ++i){
         RCB * resource = resourcelist->resources[i];
-        updateWaitlist(resource, readylist);
         removeWaitlisted(resource, getProcessName(src));
-    }
-	freeProcess(src);
+	}
+
+	freeResourceNodes(src->resources);
+	free(src->pid);
+	free(src);
+	//freeProcess(src);
 }
 
 int delete(const char *pid, ReadyList *readylist, ResourceList *resourcelist, PCB ** active_proc){
@@ -596,6 +634,10 @@ int delete(const char *pid, ReadyList *readylist, ResourceList *resourcelist, PC
 			*active_proc = NULL;
 		}
 		killTree(proc, readylist, resourcelist, active_proc);
+		for(int i = 0; i < NUM_OF_RESOURCES; ++i){
+			RCB * resource= resourcelist->resources[i];
+			updateWaitlist(resource, readylist);
+		}
 		scheduler(active_proc, readylist);
 		return 1;
 	}
