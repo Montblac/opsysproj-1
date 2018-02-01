@@ -54,7 +54,7 @@ void removeWaitlisted(RCB * resource, const char * pid);
 
 // Update
 int updateParent(PCB * src);
-void updateResources(PCB * src, ReadyList * readylist);
+void returnResources(PCB * src);
 void updateWaitlist(RCB * resource, ReadyList * readylist);
 
 // # Initialization
@@ -95,4 +95,5 @@ void writeoutput(const char * pid, FILE * file);
 void printReadyList(ReadyList * readylist);
 void printTree(const char * name, ReadyList * readylist);
 void printWaitlist(const char * rid, ResourceList * resourcelist);
+void printResources(const char * pid, ReadyList * readylist);
 #endif //CS143B_OPERATIONS_H

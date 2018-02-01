@@ -134,6 +134,7 @@ int main(int argc, char * argv[]){
             } else if (!strcmp(command, "showProcesses")) {
                 // For Debugging Purposes
                 printReadyList(readylist);
+                printResources("x", readylist);
 
             } else if (!strcmp(command, "showTree")) {
                 // For Debugging Purposes
