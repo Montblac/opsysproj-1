@@ -183,6 +183,7 @@ int main(int argc, char * argv[]){
 
         // Freeing Resources
 		free(input);
+		free(iinput);
         freeReadylist(readylist);
 		freeWaitlist(resourcelist);
         freeResourcelist(resourcelist);
