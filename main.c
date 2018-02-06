@@ -9,12 +9,27 @@
 int main(int argc, char * argv[]){
     FILE * infile, * outfile;
 
+
+
+
     // Comment out for file redirection in Linux host
     //infile = (argc > 1) ? fopen(argv[1], "r") : fopen("input.txt", "r");
-    //outfile = (argc > 2) ? fopen(argv[2], "w") : fopen("output.txt", "r");
+    //outfile = (argc > 2) ? fopen(argv[2], "w+") : fopen("output.txt", "w+");
 
-    infile = fopen("test.txt", "r");
-    outfile = fopen("54565096.txt", "w+");
+    // Comment out for user-specified filepaths
+    printf("Input File Path: ");
+    size_t isize; ssize_t iinput_size; char * iinput = NULL;
+    iinput_size = getline(&iinput, &isize, stdin);
+    char * filepath = strtok(iinput, " \n");
+    infile = (filepath != NULL) ? fopen(filepath, "r") : fopen("input.txt", "r");
+
+    printf("Output File Path: ");
+    iinput_size = getline(&iinput, &isize, stdin);
+    filepath = strtok(iinput, " \n");
+    outfile = (filepath != NULL) ? fopen(filepath, "w+") : fopen("output.txt", "r");
+
+    //infile = fopen("test.txt", "r");
+    //outfile = fopen("54565096.txt", "w+");
 
 	if(!infile){
 		printf("Please include a file...\n");
