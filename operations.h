@@ -5,6 +5,9 @@
 #ifndef CS143B_OPERATIONS_H
 #define CS143B_OPERATIONS_H
 
+// # I/O
+void writeoutput(const char * pid, FILE * file);
+
 // # Allocation
 ProcessNode * createPNode(PCB * process, ProcessNode * next);
 ResourceNode * createRNode(RCB * resource, ResourceNode * next);
@@ -36,6 +39,8 @@ ProcessNode * getResourceWaitlist(RCB * resource);
 // # Process Control Block Utility
 PCB * findProcess(const char * pid, ReadyList * readylist);
 PCB * findProcess2(const char * rid, ReadyList * readylist);
+PCB * findProcessBlocked(const char * pid, ResourceList * resourcelist);
+
 
 // # Resource Control Block Utility
 RCB * findResource(const char * rid, ResourceList * resourcelist);
@@ -87,9 +92,6 @@ int isWord(const char * input);
 int isNumber(const char * input);
 int isInRange(int num);
 int isInRange2(int num);
-
-// # I/O
-void writeoutput(const char * pid, FILE * file);
 
 // # Debugging
 void printReadyList(ReadyList * readylist);

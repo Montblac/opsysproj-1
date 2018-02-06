@@ -305,14 +305,11 @@ void removeResource(PCB * process, RCB * resource){
     }
     ++(resource->inventory);
 }
-
 void removeNResource(PCB * process, RCB * resource, int n){
     for(int i = 0; i < n; ++i){
         removeResource(process, resource);
     }
 }
-
-
 void removeWaitlisted(RCB * resource, const char * pid){
     ProcessNode ** waitlist = &resource->waitinglist;
     ProcessNode * head = *waitlist;
