@@ -74,7 +74,11 @@ int main(int argc, char * argv[]){
                 char * priority = isNumber(temp) ? strdup(temp) : NULL;
                 int pval = priority != NULL ? (int) strtol(priority, NULL, 10) : -1;
 
-                if(name && priority && strtok(NULL, " \n") == NULL && isInRange(pval) ){
+                if(name && priority
+                   && strtok(NULL, " \n") == NULL
+                   && isInRange(pval)
+                   && findProcess(name, readylist) == NULL
+                   && findProcessBlocked(name, resourcelist) == NULL){
                     create(name, pval, readylist, &active_process);
                     writeoutput(getProcessName(active_process), outfile);
                 }
