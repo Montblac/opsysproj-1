@@ -92,6 +92,7 @@ int isWord(const char * input);
 int isNumber(const char * input);
 int isInRange(int num);
 int isInRange2(int num);
+int isValidName(const char * name);
 
 // # Debugging
 void printReadyList(ReadyList * readylist);

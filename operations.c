@@ -469,6 +469,8 @@ int request(const char * rid, int units, ReadyList * readylist, ResourceList * r
             setProcessRequested(*active_process, units);
             insertResource(*active_process, resource, units);
             //printf("\tAdded resource %s to process %s.\n", rid, getProcessName(*active_process));
+        } else if (!strcmp(getProcessName(*active_process), "init")){
+          return 0;
         } else {
             setProcessState(*active_process, BLOCKED);
             setProcessRequested(*active_process, units);
@@ -508,6 +510,7 @@ void release(const char * rid, int units, ResourceList * resourcelist, ReadyList
             pnode = pnode->next;
         }
         scheduler(active_process, readylist);
+
 
     }
 }
@@ -581,6 +584,15 @@ int isInRange(int num){
 }
 int isInRange2(int num){
     return num >= 1 && num <= 4;
+}
+int isValidName(const char * name){
+    if(name == NULL){return 0;}
+    int size = 0;
+    while(name[size] != NULL){
+        ++size;
+
+    }
+    return size == 1 ? 1 : 0;
 }
 
 // # Debugging
