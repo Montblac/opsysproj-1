@@ -76,6 +76,7 @@ int main(int argc, char * argv[]){
 
                 if(name && priority
                    && strtok(NULL, " \n") == NULL
+                   && isValidName(name)
                    && isInRange(pval)
                    && findProcess(name, readylist) == NULL
                    && findProcessBlocked(name, resourcelist) == NULL){
@@ -116,7 +117,9 @@ int main(int argc, char * argv[]){
                 char * units = isNumber(temp) ? strdup(temp) : NULL;
                 int value = units != NULL ? (int)strtol(units, NULL, 10) : -1;
 
-                if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)){
+                if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)
+                    && (!strcmp(rid, "R1") || !strcmp(rid, "R2") ||
+                        !strcmp(rid, "R3") || !strcmp(rid, "R4") )){
                     int n = request(rid, value, readylist, resourcelist, &active_process);
                     if(n == 0){
                         writeoutput("error", outfile);
@@ -137,7 +140,9 @@ int main(int argc, char * argv[]){
                 char * units = isNumber(temp) ? strdup(temp) : NULL;
                 int value = units != NULL ? (int)strtol(units, NULL, 10) : -1;
 
-                if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)){
+                if(rid && units && strtok(NULL, " \n") == NULL && isInRange2(value)
+                        && (!strcmp(rid, "R1") || !strcmp(rid, "R2") ||
+                            !strcmp(rid, "R3") || !strcmp(rid, "R4") )){
                     release(rid, value, resourcelist, readylist, &active_process);
                     writeoutput(getProcessName(active_process), outfile);
                 } else {
