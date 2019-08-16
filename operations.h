@@ -1,7 +1,3 @@
-//
-// Created by Sam Leyva on 1/13/18.
-//
-
 #ifndef CS143B_OPERATIONS_H
 #define CS143B_OPERATIONS_H
 
