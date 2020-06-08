@@ -9,9 +9,6 @@
 int main(int argc, char * argv[]){
     FILE * infile, * outfile;
 
-
-
-
     // Comment out for file redirection in Linux host
     //infile = (argc > 1) ? fopen(argv[1], "r") : fopen("input.txt", "r");
     //outfile = (argc > 2) ? fopen(argv[2], "w+") : fopen("output.txt", "w+");
