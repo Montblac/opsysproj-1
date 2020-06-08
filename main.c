@@ -29,7 +29,7 @@ int main(int argc, char * argv[]){
     outfile = (filepath != NULL) ? fopen(filepath, "w+") : fopen("output.txt", "r");
 
     //infile = fopen("test.txt", "r");
-    //outfile = fopen("54565096.txt", "w+");
+    //outfile = fopen("out.txt", "w+");
 
 	if(!infile){
 		printf("Please include a file...\n");
